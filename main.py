@@ -15,6 +15,7 @@ def main():
 
     program3d_id = glutils.create_program_from_file('shader.vert', 'shader.frag')
     programGUI_id = glutils.create_program_from_file('gui.vert', 'gui.frag')
+    programIMG_id= glutils.create_program_from_file('image.vert', 'image.frag')
 
     m = Mesh.load_obj('doom_voxel_marines.obj')
     m.normalize()
@@ -37,15 +38,15 @@ def main():
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
     viewer.add_object(o)
 
-    vao = Text.initalize_geometry()
-    texture = glutils.load_texture('fontB.jpg')
-    o = Text('3ETI', np.array([-1, -1], np.float32), np.array([1, 0.2], np.float32), vao, 2, programGUI_id, texture)
-    viewer.add_object(o)
+    #vao = Text.initalize_geometry()
+    #texture = glutils.load_texture('fontB.jpg')
+    #o = Text('3ETI', np.array([-1, -1], np.float32), np.array([1, 0.2], np.float32), vao, 2, programGUI_id, texture)
+    #viewer.add_object(o)
 
 
     vao = Image.initialize_geometry()
-    texture = glutils.load_texture('butterfly.jpg')
-    o = Image('butterfly.jpg', np.array([-1, -1], np.float32), np.array([1, 1], np.float32), vao, 1, programGUI_id, texture)
+    texture = glutils.load_texture('gun1.png')
+    o = Image('gun1.png', np.array([-0.5, -1], np.float32), np.array([0.5, 0], np.float32), vao, 2, programIMG_id, texture)
     viewer.add_object(o)
 
 
@@ -55,3 +56,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    

@@ -144,15 +144,16 @@ class Image(Object):
     def draw(self):
         GL.glUseProgram(self.program)
         GL.glDisable(GL.GL_DEPTH_TEST)
-        loc = GL.glGetUniformLocation(self.program, "bottomLeft")
+        loc = GL.glGetUniformLocation(self.program, "start")
         if loc == -1:
-            print("Pas de variable uniforme : bottomLeft")
+            print("Pas de variable uniforme : start")
         GL.glUniform2f(loc, *self.bottomLeft)
 
-        loc = GL.glGetUniformLocation(self.program, "topRight")
+        loc = GL.glGetUniformLocation(self.program, "size")
         if loc == -1:
-            print("Pas de variable uniforme : topRight")
-        GL.glUniform2f(loc, *self.topRight)
+            print("Pas de variable uniforme : size")
+        size = self.topRight-self.bottomLeft
+        GL.glUniform2f(loc, *size)
 
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
