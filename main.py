@@ -6,9 +6,15 @@ import numpy as np
 import OpenGL.GL as GL
 import pyrr
 
-def main():
-    viewer = ViewerGL()
 
+def main():
+    bolt = ["sprites/bolt/bolt2.png","sprites/bolt/bolt1.png"]
+    reloadbolt = ["sprites/bolt/bolt_reload0.png","sprites/bolt/bolt_reload1.png","sprites/bolt/bolt_reload2.png","sprites/bolt/bolt_reload3.png","sprites/bolt/bolt_reload4.png","sprites/bolt/bolt_reload5.png","sprites/bolt/bolt_reload6.png","sprites/bolt/bolt_reload7.png","sprites/bolt/bolt_reload8.png","sprites/bolt/bolt_reload9.png","sprites/bolt/bolt_reload10.png"]
+    gun = ["gun1.png","gun.png"]
+    reloadglock = ["gun.png","sprites/reload0.png","sprites/reload1.png","sprites/reload2.png","sprites/reload3.png","sprites/reload4.png","sprites/reload5.png","sprites/reload6.png","sprites/reload7.png","sprites/reload8.png","sprites/reload9.png","sprites/reload10.png","gun.png"]
+    etatgun =1
+    ammo = 10
+    viewer = ViewerGL(gun , etatgun,ammo,reloadglock,bolt,reloadbolt)
     viewer.set_camera(Camera())
     viewer.cam.transformation.translation.y = 2
     viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
@@ -45,13 +51,15 @@ def main():
 
 
     vao = Image.initialize_geometry()
-    texture = glutils.load_texture('gun1.png')
-    o = Image('gun1.png', np.array([-0.5, -1], np.float32), np.array([0.5, 0], np.float32), vao, 2, programIMG_id, texture)
-    viewer.add_object(o)
+    texture = glutils.load_texture("gun.png")
+    o_gun = Image("gun.png", np.array([-0.5, -1], np.float32), np.array([0.5, 0], np.float32), vao, 2, programIMG_id, texture)
+    viewer.add_object(o_gun)
 
-
+    o_texture = glutils.load_texture(gun[etatgun])
+    viewer.update_object_texture(2, o_texture)  # Assuming the gun object is at index 0
 
     viewer.run()
+
 
 
 if __name__ == '__main__':

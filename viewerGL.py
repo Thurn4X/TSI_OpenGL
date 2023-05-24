@@ -5,10 +5,16 @@ import pyrr
 import numpy as np
 from cpe3d import Object3D
 from pyrr import Matrix44, Vector3
+import os,sys, time
+import glutils
+import pygame
+
+pygame.mixer.init(frequency = 44100, size = -16, channels = 3, buffer = 1012)
+pygame.mixer.Channel(0).set_volume(0.5)
 
 
 class ViewerGL:
-    def __init__(self):
+    def __init__(self, gun ,etatgun,ammo,reloadglock,bolt,reloadbolt):
         # initialisation de la librairie GLFW
         glfw.init()
         # paramétrage du context OpenGL
@@ -18,11 +24,11 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(1280, 720, 'OpenGL', None, None)
+        self.window = glfw.create_window(400, 400, 'OpenGL', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
         glfw.set_cursor_pos_callback(self.window, self.mouse_callback)
-        glfw.set_key_callback(self.window, self.key_callback)
+        glfw.set_mouse_button_callback(self.window, self.mouse_button_callback)
         # activation du context OpenGL pour la fenêtre
         glfw.make_context_current(self.window)
         glfw.swap_interval(1)
@@ -37,8 +43,26 @@ class ViewerGL:
         # Mouse handling variables
         self.prev_mouse_pos = None
         self.mouse_sensitivity = 0.001
+        self.gun = gun
+        self.reloadglock = reloadglock
+        self.bolt = bolt
+        self.reloadbolt = reloadbolt
+        self.etatgun = etatgun
+        self.texture_change_delay = 0.1
+
+        self.last_texture_change_time = glfw.get_time()  # Set the initial time to the current time
+        self.gun_index = 0  # Index of the current gun texture
+        self.is_texture_loop_active = False  # Flag indicating if the texture change loop is active
+        self.left_mouse_button_pressed = False  # Flag indicating if the left mouse button is pressed
+        self.mouse_buttons = []
+        self.ammo = ammo
+        self.current_texture_list = self.gun  # Initialize with the gun texture list
+        self.weapon = "bolt"
+
+
 
     def run(self):
+        global etatgun
         # hide the cursor
         glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_HIDDEN)
         # boucle d'affichage
@@ -47,6 +71,20 @@ class ViewerGL:
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
             self.update_key()
+            self.update_mouse_button()
+
+            etatgun = 0
+            self.fire()
+
+            if self.is_texture_loop_active:
+                # Calculate the time elapsed since the last texture change
+                current_time = glfw.get_time()
+                elapsed_time = current_time - self.last_texture_change_time
+
+                # Check if enough time has passed for the next texture change
+                if elapsed_time >= self.texture_change_delay:
+                    self.change_gun_texture(self.current_texture_list)  # Pass the gun texture list
+                    self.last_texture_change_time = current_time
 
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
@@ -59,6 +97,7 @@ class ViewerGL:
             glfw.swap_buffers(self.window)
             # gestion des évènements
             glfw.poll_events()
+
         
 
     
@@ -156,6 +195,34 @@ class ViewerGL:
         self.cam.transformation.rotation_center = self.cam.transformation.translation.copy()
 
 
+    def mouse_button_callback(self, win, button, action, mods):
+        if button == glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
+            if self.weapon == "glock":
+                if self.ammo >0:
+
+                    print("son en cours")
+                    pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/GOCK.ogg'))
+                else:
+                    pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/DRY.ogg'))
+            elif self.weapon == "bolt":
+                if self.ammo >0:
+                    pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/bolt_fire.ogg'))
+                else:
+                    self.reload()
+
+
+        if action == glfw.PRESS:
+            self.mouse_buttons.append(button)
+        elif action == glfw.RELEASE and button in self.mouse_buttons:
+            self.mouse_buttons.remove(button)
+
+
+    def update_mouse_button(self):
+        if self.left_mouse_button_pressed and not self.is_texture_loop_active:
+            self.change_gun_texture()  # Change the texture immediately
+            self.last_texture_change_time = glfw.get_time()  # Update the last texture change time
+            self.is_texture_loop_active = True  # Set the flag to start the texture change loop
+
     def mouse_callback(self, win, xpos, ypos):
         window_width, window_height = glfw.get_window_size(self.window)
         center_x = window_width // 2
@@ -181,6 +248,73 @@ class ViewerGL:
         # Restrict cursor movement to stay inside the window
         glfw.set_cursor_pos(self.window, center_x, center_y)
 
+    def update_object_texture(self, obj_index, texture):
+        if obj_index < len(self.objs):
+            obj = self.objs[obj_index]
+            obj.texture = texture
+
+    def fire(self):
+        if self.ammo > 0:
+            print(self.ammo)
+            for button in self.mouse_buttons:
+                if button == glfw.MOUSE_BUTTON_LEFT and not self.is_texture_loop_active:
+                    print("tir en cours")
+                    if self.weapon == "glock":
+                        self.current_texture_list = self.gun
+                    elif self.weapon == "bolt":
+                        self.current_texture_list = self.bolt
+
+                    self.ammo -= 1  # Remove 1 from the ammo variable
+                    self.change_gun_texture(self.current_texture_list)
+                    self.last_texture_change_time = glfw.get_time()
+                    self.is_texture_loop_active = True
+        if self.ammo == 0:
+            self.reload()
+
+    def reload(self):
+        if self.weapon == "glock":           
+            sound_clipout = pygame.mixer.Sound('sounds/CLIPOUT.ogg')
+            sound_clipin = pygame.mixer.Sound('sounds/CLIPIN.ogg')
+            chan1 = pygame.mixer.find_channel()
+            chan1.queue(sound_clipout)
+            chan1.queue(sound_clipin)
+            self.current_texture_list = self.reloadglock
+
+        elif self.weapon == "bolt":
+            sound_clipout = pygame.mixer.Sound('sounds/bolt_reload.ogg')
+            chan1 = pygame.mixer.find_channel()
+            chan1.queue(sound_clipout)
+            self.current_texture_list = self.reloadbolt
+
+        
+
+        
+
+        self.ammo += 10
+        self.change_gun_texture(self.current_texture_list)
+        self.last_texture_change_time = glfw.get_time()
+        self.is_texture_loop_active = True
+
+        
+
+ 
+
+
+    def change_gun_texture(self, texture_list=None):
+        if texture_list is None:
+            texture_list = self.current_texture_list
+
+        if self.gun_index < len(texture_list):
+            texture_path = texture_list[self.gun_index]
+            print("Image processed:", texture_path)
+            texture = glutils.load_texture(texture_path)
+            self.update_object_texture(2, texture)  # Assuming the gun object is at index 2
+            print("Image changed")
+            self.gun_index += 1
+
+        if self.gun_index >= len(texture_list):
+            self.gun_index = 0  # Reset the index to loop back to the beginning
+            self.is_texture_loop_active = False  # Stop the texture change loop
 
 
         
