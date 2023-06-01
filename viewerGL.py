@@ -68,7 +68,7 @@ class ViewerGL:
         self.ensaut = False
         self.translation_jump=0.1
         self.tinit=0#temps début du saut
-        self.ennemiposition=[[[2, 0, 2],[0, 0, 0], [0, 3, 0], [2, 3, 2]]]#liste des ennemis avec pour chacun leur position
+        self.ennemiposition=[[[2, 0, 2],[0, 0, 0], [0, 3, 0], [2, 3, 2]]]#liste de l'ennemi avec sa position
 
 
     def run(self):
@@ -223,6 +223,7 @@ class ViewerGL:
                 if self.ensaut == False:
                     self.tinit=glfw.get_time()#temps début du saut
                     self.ensaut = True
+
                     
 
         # Update camera's rotation center based on its translation
@@ -354,7 +355,7 @@ class ViewerGL:
             texture_path = texture_list[self.gun_index]
             texture = glutils.load_texture(texture_path)
             self.update_object_texture(3, texture)  # Assuming the gun object is at index 3
-            print("changement de texture")
+            #print("changement de texture")
             self.gun_index += 1
 
         if self.gun_index >= len(texture_list):
@@ -362,22 +363,56 @@ class ViewerGL:
             self.reloading = False
             self.is_texture_loop_active = False  # Stop the texture change loop
         
-    def ennemis(self):
-        angle=np.arctan(self.cam.transformation.translation.z/self.cam.transformation.translation.x) #angle de la rotation
+###
+    #def ennemis(self):
+        #angle=np.arctan(self.cam.transformation.translation.z/self.cam.transformation.translation.x) #angle de la rotation
         #différent cas de rotation selon le signe des axes
-        if self.cam.transformation.translation.x>0 and self.cam.transformation.translation.z>0: 
-            rotation=[[cos(angle),0,sin(angle)],[0,1,0],[-sin(angle),0,cos(angle)]]
-            for i in range (0,3):
-                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
-        if self.cam.transformation.translation.x<0 and self.cam.transformation.translation.z>0:
-            rotation=[[cos(angle+(1/2)*pi),0,sin(angle+(1/2)*pi)],[0,1,0],[-sin(angle+(1/2)*pi),0,cos(angle+(1/2)*pi)]]
-            for i in range (0,3):
-                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
-        if self.cam.transformation.translation.x>0 and self.cam.transformation.translation.z<0:
-            rotation=[[cos(angle+(3/2)*pi),0,sin(angle+(3/2)*pi)],[0,1,0],[-sin(angle+(3/2)*pi),0,cos(angle+(3/2)*pi)]]
-            for i in range (0,3):
-                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
-        if self.cam.transformation.translation.x<0 and self.cam.transformation.translation.z<0:
-            rotation=[[cos(angle+pi),0,sin(angle+pi)],[0,1,0],[-sin(angle+pi),0,cos(angle+pi)]]
-            for i in range (0,3):
-                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        #if self.cam.transformation.translation.x>0 and self.cam.transformation.translation.z>0: 
+         #   rotation=[[cos(angle),0,sin(angle)],[0,1,0],[-sin(angle),0,cos(angle)]]
+          #  for i in range (0,3):
+           #     self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        #if self.cam.transformation.translation.x<0 and self.cam.transformation.translation.z>0:
+         #   rotation=[[cos(angle+(1/2)*pi),0,sin(angle+(1/2)*pi)],[0,1,0],[-sin(angle+(1/2)*pi),0,cos(angle+(1/2)*pi)]]
+          #  for i in range (0,3):
+           #     self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        #if self.cam.transformation.translation.x>0 and self.cam.transformation.translation.z<0:
+         #   rotation=[[cos(angle+(3/2)*pi),0,sin(angle+(3/2)*pi)],[0,1,0],[-sin(angle+(3/2)*pi),0,cos(angle+(3/2)*pi)]]
+          #  for i in range (0,3):
+           #     self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        #if self.cam.transformation.translation.x<0 and self.cam.transformation.translation.z<0:
+         #   rotation=[[cos(angle+pi),0,sin(angle+pi)],[0,1,0],[-sin(angle+pi),0,cos(angle+pi)]]
+          #  for i in range (0,3):
+           #     self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+
+###
+    def ennemis(self):
+        # Get the enemy's position
+        enemy_position = self.objs[2].transformation.translation  # Assuming the enemy object is at index 2 in the objs list
+
+        # Get the camera's position
+        camera_position = self.cam.transformation.translation
+
+        # Calculate the angle between the enemy and the camera
+        angle = np.arctan2(camera_position.x - enemy_position.x, camera_position.z - enemy_position.z)
+
+        # Update the enemy object's rotation around the y-axis
+        self.objs[2].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+
+        # Define the speed at which the enemy moves towards the camera
+        speed = 0.01
+
+        # Calculate the direction from the enemy to the camera
+        direction = camera_position - enemy_position
+
+        # Normalize the direction vector
+        direction = direction / np.linalg.norm(direction)
+
+        # Update the enemy's translation to move towards the camera
+        self.objs[2].transformation.translation += direction * speed
+
+
+
+
+
+
+
