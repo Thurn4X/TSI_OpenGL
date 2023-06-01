@@ -15,7 +15,7 @@ def main():
     reloadglock = ["sprites/Pistol/HW2Ra0.png","sprites/Pistol/HW2Rb0.png","sprites/Pistol/HW2Rc0.png","sprites/Pistol/HW2Rd0.png","sprites/Pistol/HW2Re0.png","sprites/Pistol/HW2RR0.png","sprites/Pistol/HW2Rg0.png","sprites/Pistol/HW2Rh0.png","sprites/Pistol/HW2Ri0.png","sprites/Pistol/HW2Rj0.png","sprites/Pistol/HW2Rk0.png","sprites/Pistol/HW2Rl0.png","sprites/Pistol/HW2Rm0.png","sprites/Pistol/HW2Rn0.png","sprites/Pistol/HW2Ro0.png","sprites/Pistol/HW2Rp0.png","sprites/Pistol/HW2Rq0.png","sprites/Pistol/HW2Rr0.png","sprites/Pistol/HW2Rs0.png","sprites/Pistol/HW2Rt0.png","sprites/Pistol/HW2Ru0.png","sprites/Pistol/HW2Rv0.png",]
     etatgun =1
     ammo = 10
-    viewer = ViewerGL(gun , etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar)
+    viewer = ViewerGL(gun,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar)
     viewer.set_camera(Camera())
     viewer.cam.transformation.translation.y = 2
     viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
@@ -51,11 +51,15 @@ def main():
     #viewer.add_object(o)
 
     m = Mesh()
+    #variables carré méchant 2D
     p0, p1, p2, p3 =  [2, 0, 2],[0, 0, 0], [0, 3, 0], [2, 3, 2]
     n, c = [0, 1, 0], [1, 1, 1]
     t0, t1, t2, t3 = [0, 0], [1, 0], [1, 1], [0, 1]
+    #définition carré
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
+
+    #ajout texture
     texture = glutils.load_texture("sprites/Grunt1/HK1Ia1.png")
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
     viewer.add_object(o)
@@ -84,7 +88,6 @@ def main():
     viewer.run()
 
 
-
+    
 if __name__ == '__main__':
     main()
-    

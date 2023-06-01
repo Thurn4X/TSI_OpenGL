@@ -8,6 +8,7 @@ from pyrr import Matrix44, Vector3
 import os,sys, time
 import glutils
 import pygame
+from math import *
 
 pygame.mixer.init(frequency = 44100, size = -16, channels = 3, buffer = 1012)
 pygame.mixer.Channel(0).set_volume(0.5)
@@ -24,7 +25,7 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(400, 400, 'DA GAME', None, None)
+        self.window = glfw.create_window(1280, 700, 'DA GAME', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
         glfw.set_cursor_pos_callback(self.window, self.mouse_callback)
@@ -63,10 +64,17 @@ class ViewerGL:
         self.current_texture_list = self.crowbar[self.crowbar_indice]  # Initialize with the gun texture list
         self.weapon = "crowbar"
         self.usedammo = 10
-
+        self.descente =1#variable saut
+        self.ensaut = False
+        self.translation_jump=0.1
+        self.tinit=0#temps début du saut
+        self.ennemiposition=[[[2, 0, 2],[0, 0, 0], [0, 3, 0], [2, 3, 2]]]#liste des ennemis avec pour chacun leur position
 
 
     def run(self):
+        #paramètres parabole pour le saut
+        alpha=-8
+        beta=2
         global etatgun
         # hide the cursor
         glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_HIDDEN)
@@ -75,12 +83,15 @@ class ViewerGL:
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-
+            self.ennemis()
             self.update_key()
             self.update_mouse_button()
             etatgun = 0
             self.fire()
-
+            if self.ensaut:
+                    self.cam.transformation.translation.y = alpha*(glfw.get_time()-self.tinit-0.5)**2 + beta +2
+                    if self.cam.transformation.translation.y <= 2:
+                        self.ensaut= False
 
             if self.is_texture_loop_active:
                 # Calculate the time elapsed since the last texture change
@@ -208,6 +219,11 @@ class ViewerGL:
                 self.cam.transformation.translation += pyrr.Vector3([0, translation_speed, 0])
             elif key == glfw.KEY_E:
                 self.cam.transformation.translation -= pyrr.Vector3([0, translation_speed, 0])
+            elif key == glfw.KEY_SPACE:
+                if self.ensaut == False:
+                    self.tinit=glfw.get_time()#temps début du saut
+                    self.ensaut = True
+                    
 
         # Update camera's rotation center based on its translation
         self.cam.transformation.rotation_center = self.cam.transformation.translation.copy()
@@ -345,7 +361,23 @@ class ViewerGL:
             self.gun_index = 0  # Reset the index to loop back to the beginning
             self.reloading = False
             self.is_texture_loop_active = False  # Stop the texture change loop
-            
-
-
         
+    def ennemis(self):
+        angle=np.arctan(self.cam.transformation.translation.z/self.cam.transformation.translation.x) #angle de la rotation
+        #différent cas de rotation selon le signe des axes
+        if self.cam.transformation.translation.x>0 and self.cam.transformation.translation.z>0: 
+            rotation=[[cos(angle),0,sin(angle)],[0,1,0],[-sin(angle),0,cos(angle)]]
+            for i in range (0,3):
+                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        if self.cam.transformation.translation.x<0 and self.cam.transformation.translation.z>0:
+            rotation=[[cos(angle+(1/2)*pi),0,sin(angle+(1/2)*pi)],[0,1,0],[-sin(angle+(1/2)*pi),0,cos(angle+(1/2)*pi)]]
+            for i in range (0,3):
+                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        if self.cam.transformation.translation.x>0 and self.cam.transformation.translation.z<0:
+            rotation=[[cos(angle+(3/2)*pi),0,sin(angle+(3/2)*pi)],[0,1,0],[-sin(angle+(3/2)*pi),0,cos(angle+(3/2)*pi)]]
+            for i in range (0,3):
+                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
+        if self.cam.transformation.translation.x<0 and self.cam.transformation.translation.z<0:
+            rotation=[[cos(angle+pi),0,sin(angle+pi)],[0,1,0],[-sin(angle+pi),0,cos(angle+pi)]]
+            for i in range (0,3):
+                self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
