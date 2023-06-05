@@ -15,7 +15,7 @@ pygame.mixer.Channel(0).set_volume(0.5)
 
 
 class ViewerGL:
-    def __init__(self, gun ,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar):
+    def __init__(self, gun ,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,gruntmove,gruntidle):
         # initialisation de la librairie GLFW
         glfw.init()
         # paramétrage du context OpenGL
@@ -44,6 +44,8 @@ class ViewerGL:
         self.prev_mouse_pos = None
         self.mouse_sensitivity = 0.001
         self.gun = gun
+        self.gruntmove = gruntmove
+        self.gruntidle = gruntidle
         self.crowbar = crowbar
         self.crowbar_indice = 0
         self.reloadglock = reloadglock
@@ -53,6 +55,9 @@ class ViewerGL:
         self.etatgun = etatgun
         self.texture_change_delay_fire = 0.02
         self.texture_change_delay_reload = 0.05
+        self.enemy_texture_delay = 0.2
+        self.enemyattack = False
+        self.last_frame_index = -1
         self.current_change_delay = self.texture_change_delay_fire
         self.last_texture_change_time = glfw.get_time()  # Set the initial time to the current time
         self.gun_index = 0  # Index of the current gun texture
@@ -69,6 +74,8 @@ class ViewerGL:
         self.translation_jump=0.1
         self.tinit=0#temps début du saut
         self.ennemiposition=[[[2, 0, 2],[0, 0, 0], [0, 3, 0], [2, 3, 2]]]#liste de l'ennemi avec sa position
+        self.last_sound_play_time = 0
+        self.sound_delay = 0.5
 
 
     def run(self):
@@ -79,15 +86,17 @@ class ViewerGL:
         # hide the cursor
         glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_HIDDEN)
         self.choixammo()
+        self.last_enemy_texture_change_time = glfw.get_time()
+
         # boucle d'affichage
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-            self.ennemis()
             self.update_key()
             self.update_mouse_button()
             etatgun = 0
             self.fire()
+            self.check_enemy_distance()
             if self.ensaut:
                     self.cam.transformation.translation.y = alpha*(glfw.get_time()-self.tinit-0.5)**2 + beta +2
                     if self.cam.transformation.translation.y <= 2:
@@ -185,12 +194,12 @@ class ViewerGL:
                 self.weapon = "glock"
                 self.current_texture_list = self.gun
                 texture = glutils.load_texture("sprites/Pistol/HW2Fa0.png")
-                self.update_object_texture(3, texture)
+                self.update_object_texture(1, texture)
             elif key == glfw.KEY_3:
                 self.weapon = "crowbar"
                 self.current_texture_list = self.crowbar[self.crowbar_indice]
                 texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
-                self.update_object_texture(3, texture)
+                self.update_object_texture(1, texture)
 
 
         # Get the forward direction by transforming the default forward vector with the rotation matrix
@@ -354,7 +363,7 @@ class ViewerGL:
         if self.gun_index < len(texture_list):
             texture_path = texture_list[self.gun_index]
             texture = glutils.load_texture(texture_path)
-            self.update_object_texture(3, texture)  # Assuming the gun object is at index 3
+            self.update_object_texture(1, texture)  # Assuming the gun object is at index 3
             #print("changement de texture")
             self.gun_index += 1
 
@@ -387,16 +396,16 @@ class ViewerGL:
 ###
     def ennemis(self):
         # Get the enemy's position
-        enemy_position = self.objs[2].transformation.translation  # Assuming the enemy object is at index 2 in the objs list
+        enemy_position = self.objs[0].transformation.translation  # Assuming the enemy object is at index 0 in the objs list
 
         # Get the camera's position
         camera_position = self.cam.transformation.translation
 
         # Calculate the angle between the enemy and the camera
-        angle = np.arctan2(camera_position.x - enemy_position.x, camera_position.z - enemy_position.z)
+        angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
 
         # Update the enemy object's rotation around the y-axis
-        self.objs[2].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+        self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
 
         # Define the speed at which the enemy moves towards the camera
         speed = 0.01
@@ -407,8 +416,47 @@ class ViewerGL:
         # Normalize the direction vector
         direction = direction / np.linalg.norm(direction)
 
-        # Update the enemy's translation to move towards the camera
-        self.objs[2].transformation.translation += direction * speed
+        # Calculate the enemy's new position by moving towards the camera
+        new_position = enemy_position + direction * speed
+
+        # Adjust the new position to stay grounded on the y-axis (assuming ground level is at y=0)
+        new_position[1] = 0
+
+        # Update the enemy's translation with the new position
+        self.objs[0].transformation.translation = new_position
+
+    def enemy_animation(self):
+        current_time = glfw.get_time()
+        elapsed_time = current_time - self.last_enemy_texture_change_time
+
+        distance_traveled = self.objs[0].transformation.translation.length
+
+        frame_index = 0  # Initialize frame_index with a default value
+
+        if not self.enemyattack:
+            frame_index = int(distance_traveled / self.enemy_texture_delay) % len(self.gruntmove)
+            texture_path = self.gruntmove[frame_index]
+        else:
+            frame_index_idle = int(current_time / self.enemy_texture_delay) % len(self.gruntidle)
+
+            # Play sound only when reaching the last frame of gruntidle list and enough time has passed since the last play
+            if frame_index_idle == len(self.gruntidle) - 1 and current_time - self.last_sound_play_time >= self.sound_delay:
+                print("feu")
+                sound_enemyfire = pygame.mixer.Sound('sounds/ar2_fire1.wav')
+                chan3 = pygame.mixer.find_channel()
+                chan3.queue(sound_enemyfire)
+
+                # Update the time when the sound was last played
+                self.last_sound_play_time = current_time
+
+            texture_path = self.gruntidle[frame_index_idle]
+
+        if frame_index != self.last_frame_index or self.enemyattack:
+            texture = glutils.load_texture(texture_path)
+            self.update_object_texture(0, texture)  # Assuming the enemy object is at index 0
+            self.last_frame_index = frame_index
+
+        self.last_enemy_texture_change_time = current_time
 
 
 
@@ -416,3 +464,35 @@ class ViewerGL:
 
 
 
+
+            
+    def check_enemy_distance(self):
+        enemy_position = self.objs[0].transformation.translation
+        camera_position = self.cam.transformation.translation
+        distance = np.linalg.norm(enemy_position - camera_position)
+
+        if distance > 20:
+            self.enemy_animation()
+            self.ennemis()
+            print("troploin")
+            self.enemyattack = False
+        else:
+            self.enemy_animation()
+            self.enemyattack = True
+            enemy_position = self.objs[0].transformation.translation
+
+            # Get the camera's position
+            camera_position = self.cam.transformation.translation
+
+            # Calculate the angle between the enemy and the camera
+            angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
+
+            # Update the enemy object's rotation around the y-axis
+            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+            #print("l'ennemi est dans le rayon d'attaque")
+
+            frame_index_idle = int(glfw.get_time() / self.enemy_texture_delay) % len(self.gruntidle)
+            texture_path = self.gruntidle[frame_index_idle]
+            texture = glutils.load_texture(texture_path)
+            self.update_object_texture(0, texture)
+            

@@ -59,3 +59,29 @@ def load_texture(filename):
     # Load the texture image data
     GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, im.width, im.height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, im.tobytes())
     return texture_id
+
+
+def create_cube(width, height, depth):
+    # Generate the vertex data for a cube with the given dimensions
+    vertices = [
+        # Front face
+        -width/2, -height/2, depth/2,
+        width/2, -height/2, depth/2,
+        width/2, height/2, depth/2,
+        -width/2, height/2, depth/2,
+        # Back face
+        -width/2, -height/2, -depth/2,
+        width/2, -height/2, -depth/2,
+        width/2, height/2, -depth/2,
+        -width/2, height/2, -depth/2,
+        # Other faces...
+    ]
+
+    # Define the vertex indices for the cube
+    indices = [
+        0, 1, 2, 2, 3, 0,  # Front face
+        4, 5, 6, 6, 7, 4,  # Back face
+        # Other faces...
+    ]
+
+    return vertices, indices
