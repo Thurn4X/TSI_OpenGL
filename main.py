@@ -69,7 +69,7 @@ def main():
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
 
     #ajout texture
-    texture = glutils.load_texture("sprites/Slave/HLFDb0.png")
+    texture = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
     viewer.add_object(o)
 
