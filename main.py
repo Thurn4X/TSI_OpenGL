@@ -105,70 +105,6 @@ def main():
 
 
 
-
-    map_matrix = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
-        [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ]
-
-    cube = Mesh.load_obj('cube.obj')
-    cube_width = np.amax(cube.vertices, axis=0)[0] - np.amin(cube.vertices, axis=0)[0]
-    cube_height = np.amax(cube.vertices, axis=0)[1] - np.amin(cube.vertices, axis=0)[1]
-    cube_depth = np.amax(cube.vertices, axis=0)[2] - np.amin(cube.vertices, axis=0)[2]
-    cube.normalize()
-    cube_scale = min(1.0, 4.0 / cube_width)  # Adjust the desired scale of the cubes
-
-
-    vao = m.load_to_gpu()
-
-    """
-    for i in range (len(map_matrix[0])):
-        for j in range (len(map_matrix[1])):
-            valeur = map_matrix[i][j]
-            if valeur == 1:
-                tr = Transformation3D()
-                tr.translation.z = -5
-                tr.rotation_center.z = 0.2
-                texture = glutils.load_texture('grass.jpg')
-                o = Object3D(vao, m.get_nb_triangles(), program3d_id, texture, tr)
-                viewer.add_object(o)
-    """
-
-
-
-
-        
-    for row in range(len(map_matrix)):
-        for col in range(len(map_matrix[row])):
-            if map_matrix[row][col] == 0:
-                tr = Transformation3D()
-                tr.translation.x = col * (cube_width * cube_scale)  # Adjust the spacing between cubes along the x-axis
-                tr.translation.y = -np.amin(cube.vertices, axis=0)[1] * cube_scale
-                tr.translation.z = -row * (cube_depth * cube_scale)  # Adjust the spacing between cubes along the z-axis
-                tr.rotation_center.z = 0.2
-                texture = glutils.load_texture('grass.jpg')
-                o = Object3D(cube.load_to_gpu(), cube.get_nb_triangles(), program3d_id, texture, tr)
-                viewer.add_object(o)
-
-
-
-
-
     vao = Text.initalize_geometry()
     texture = glutils.load_texture('fontB.jpg')
     o = Text('HP :', np.array([-1, -0.95], np.float32), np.array([-0.75,-0.8], np.float32), vao, 2, programGUI_id, texture)
@@ -180,17 +116,82 @@ def main():
     viewer.add_object(o_ammo)
     viewer.add_object(o_ammovalue)
 
-    m = Mesh.load_obj('cube.obj')
-    m.normalize()
-    m.apply_matrix(pyrr.matrix44.create_from_scale([3, 1, 1, 1]))
-    tr = Transformation3D()
-    tr.translation.y = -np.amin(m.vertices, axis=0)[1]
-    tr.translation.z = -5
-    tr.rotation_center.z = 0.2
-    texture = glutils.load_texture('grass.jpg')
-    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
-    viewer.add_object(o)
-    
+   
+    texture_paths = {
+        0: 'wallfinale.png',
+        2: 'tilefinale.png',
+        3: 'tilefinale.png'
+    }
+
+    # Load the textures
+    textures = {}
+    for value, path in texture_paths.items():
+        textures[value] = glutils.load_texture(path)
+
+    map_matrix = [
+        [1,1,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2],
+        [1,2,1,1,1,2,2,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,2,2,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,1,1,1,1,1,2,1,1,1,2,2,2,2,2,2,2,2,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,1,2,1,1,1,1,1,2],
+        [1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,2,2],
+        [1,1,1,1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,2,1],
+        [1,1,2,2,2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,1,2,1],
+        [1,1,2,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,2,1,1,1,1,1,1,2,1,2,1],
+        [2,2,2,1,2,1,1,1,1,1,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,2,1,2,2],
+        [1,1,1,1,2,2,2,2,2,2,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,2],
+        [2,2,2,1,2,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1],
+        [1,1,2,1,2,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,2],
+        [1,1,2,1,2,2,2,1,1,2,1,2,2,1,1,1,1,1,1,2,2,1,1,1,1,2,2,1,2,1],
+        [1,1,2,1,1,1,2,1,1,2,1,2,2,2,2,2,2,1,2,2,2,1,2,1,1,2,2,1,2,2],
+        [1,1,2,2,2,1,2,2,1,2,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2],
+        [1,1,1,2,1,1,1,2,2,2,1,2,2,2,2,2,2,1,2,2,2,2,2,1,1,1,1,1,1,2],
+        [1,1,1,2,1,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
+        [1,1,1,2,1,1,1,2,2,2,1,2,2,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
+        [1,1,1,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
+        [1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2],
+
+
+    ]
+
+    cube = Mesh.load_obj('cube.obj')
+    cube_width = np.amax(cube.vertices, axis=0)[0] - np.amin(cube.vertices, axis=0)[0]
+    cube_height = np.amax(cube.vertices, axis=0)[1] - np.amin(cube.vertices, axis=0)[1]
+    cube_depth = np.amax(cube.vertices, axis=0)[2] - np.amin(cube.vertices, axis=0)[2]
+    cube.normalize()
+    cube_scale = min(1.0, 4.0 / cube_width)  # Adjust the desired scale of the cubes
+    cube.apply_matrix(pyrr.matrix44.create_from_scale([1, 2, 1, 1]))
+
+
+    vao = m.load_to_gpu()
+ 
+# Iterate over the map_matrix and add cubes accordingly
+    for row in range(len(map_matrix)):
+        for col in range(len(map_matrix[row])):
+            if map_matrix[row][col] == 2:
+                texture = textures[0]  # Use the grass texture for 0s
+                tr = Transformation3D()
+                tr.translation.x = col * (cube_width * cube_scale)
+                tr.translation.y = -np.amin(cube.vertices, axis=0)[1] * cube_scale
+                tr.translation.z = -row * (cube_depth * cube_scale)
+                tr.rotation_center.z = 0.2
+                o = Object3D(cube.load_to_gpu(), cube.get_nb_triangles(), program3d_id, texture, tr)
+                viewer.add_object(o)
+            elif map_matrix[row][col] in textures:
+                texture = textures[map_matrix[row][col]]
+                tr = Transformation3D()
+                tr.translation.x = col * (cube_width * cube_scale)
+                tr.translation.y = -np.amin(cube.vertices, axis=0)[1] * cube_scale
+                tr.translation.z = -row * (cube_depth * cube_scale)
+                tr.rotation_center.z = 0.2
+                o = Object3D(cube.load_to_gpu(), cube.get_nb_triangles(), program3d_id, texture, tr)
+                viewer.add_object(o)
+
+
     
     viewer.run()
 
