@@ -148,8 +148,16 @@ def main():
 
 
 
-
- 
+    vao = Text.initalize_geometry()
+    texture = glutils.load_texture('fontB.jpg')
+    o = Text('HP :', np.array([-1, -1], np.float32), np.array([-0.75,-0.75], np.float32), vao, 2, programGUI_id, texture)
+    o_lifevalue = Text('100', np.array([-0.75, -1], np.float32), np.array([-0.65,-0.75], np.float32), vao, 2, programGUI_id, texture)
+    o_ammo = Text('MUN :', np.array([-0.65, -1], np.float32), np.array([-0.45,-0.75], np.float32), vao, 2, programGUI_id, texture)
+    o_ammovalue = Text('0', np.array([-0.45, -1], np.float32), np.array([-0.3,-0.75], np.float32), vao, 2, programGUI_id, texture)
+    viewer.add_object(o)
+    viewer.add_object(o_lifevalue)
+    viewer.add_object(o_ammo)
+    viewer.add_object(o_ammovalue)
 
     
     
