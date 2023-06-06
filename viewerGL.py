@@ -118,9 +118,10 @@ class ViewerGL:
 
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
-                if isinstance(obj, Object3D):
-                    self.update_camera(obj.program)
                 obj.draw()
+            self.update_camera(self.objs[0].program)
+                
+
             if glfw.get_key(self.window, glfw.KEY_ESCAPE) == glfw.PRESS:
                 glfw.set_window_should_close(self.window, True)
             # changement de buffer d'affichage pour éviter un effet de scintillement
@@ -204,6 +205,7 @@ class ViewerGL:
                 self.current_texture_list = self.crowbar[self.crowbar_indice]
                 texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
                 self.update_object_texture(1, texture)
+                
 
 
         # Get the forward direction by transforming the default forward vector with the rotation matrix
