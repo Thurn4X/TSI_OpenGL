@@ -88,7 +88,7 @@ def main():
 
     vao = Image.initialize_geometry()
     texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
-    o_gun = Image("sprites/Crowbar/crowbar1.png", np.array([-0.5, -1], np.float32), np.array([0.5, 0], np.float32), vao, 2, programIMG_id, texture)
+    o_gun = Image("sprites/Crowbar/crowbar1.png", np.array([-0.7, -1], np.float32), np.array([0.7, 0.8], np.float32), vao, 2, programIMG_id, texture)
     viewer.add_object(o_gun)
 
     o_texture = glutils.load_texture(crowbar[0][0])
@@ -150,10 +150,10 @@ def main():
 
     vao = Text.initalize_geometry()
     texture = glutils.load_texture('fontB.jpg')
-    o = Text('HP :', np.array([-1, -1], np.float32), np.array([-0.75,-0.75], np.float32), vao, 2, programGUI_id, texture)
-    o_lifevalue = Text('100', np.array([-0.75, -1], np.float32), np.array([-0.65,-0.75], np.float32), vao, 2, programGUI_id, texture)
-    o_ammo = Text('MUN :', np.array([-0.65, -1], np.float32), np.array([-0.45,-0.75], np.float32), vao, 2, programGUI_id, texture)
-    o_ammovalue = Text('0', np.array([-0.45, -1], np.float32), np.array([-0.3,-0.75], np.float32), vao, 2, programGUI_id, texture)
+    o = Text('HP :', np.array([-1, -0.95], np.float32), np.array([-0.75,-0.8], np.float32), vao, 2, programGUI_id, texture)
+    o_lifevalue = Text('100', np.array([-0.75, -0.95], np.float32), np.array([-0.65,-0.8], np.float32), vao, 2, programGUI_id, texture)
+    o_ammo = Text('MUN :', np.array([0.45, -0.95], np.float32), np.array([0.65,-0.8], np.float32), vao, 2, programGUI_id, texture)
+    o_ammovalue = Text('0', np.array([0.7, -0.95], np.float32), np.array([0.8,-0.8], np.float32), vao, 2, programGUI_id, texture)
     viewer.add_object(o)
     viewer.add_object(o_lifevalue)
     viewer.add_object(o_ammo)
