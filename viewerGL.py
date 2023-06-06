@@ -9,6 +9,7 @@ import os,sys, time
 import glutils
 import pygame
 from math import *
+import random
 
 pygame.mixer.init(frequency = 44100, size = -16, channels = 3, buffer = 1012)
 pygame.mixer.Channel(0).set_volume(0.5)
@@ -40,9 +41,11 @@ class ViewerGL:
         self.touch = set()
         self.objs = []
         self.key_pressed = {}
-        # Mouse handling variables
+        # pour la souris
         self.prev_mouse_pos = None
         self.mouse_sensitivity = 0.001
+        #tous le reste (gros bazar)
+        self.life = 100
         self.gun = gun
         self.gruntmove = gruntmove
         self.gruntidle = gruntidle
@@ -95,6 +98,7 @@ class ViewerGL:
             self.update_key()
             self.update_mouse_button()
             etatgun = 0
+            self.update_gui()
             self.fire()
             self.check_enemy_distance()
             if self.ensaut:
@@ -304,10 +308,12 @@ class ViewerGL:
             self.usedammo = self.ammo
         elif self.weapon == "bolt":
             self.usedammo = self.boltammo
+        elif self.weapon == "crowbar":
+            self.usedammo = 0
 
     def fire(self):
         if self.reloading == False:
-            if self.usedammo > 0:
+            if self.usedammo > 0 or self.weapon == "crowbar":
                 for button in self.mouse_buttons:
                     if button == glfw.MOUSE_BUTTON_LEFT and not self.is_texture_loop_active:
                         self.current_change_delay = self.texture_change_delay_fire
@@ -327,7 +333,9 @@ class ViewerGL:
                         self.last_texture_change_time = glfw.get_time()
                         self.is_texture_loop_active = True
             if self.usedammo == 0:
-                self.reload()
+                if self.weapon != "crowbar":
+                    self.usedammo +=10
+                    self.reload()
 
     def reload(self):
         
@@ -340,7 +348,7 @@ class ViewerGL:
             chan1.queue(sound_clipout)
             chan1.queue(sound_clipin)
             self.current_texture_list = self.reloadglock
-            self.usedammo += 10
+  
 
 
         elif self.weapon == "bolt":
@@ -348,7 +356,7 @@ class ViewerGL:
             chan1 = pygame.mixer.find_channel()
             chan1.queue(sound_clipout)
             self.current_texture_list = self.reloadbolt
-            self.usedammo += 1
+
         elif self.weapon == "crowbar":
             pass
         
@@ -427,7 +435,6 @@ class ViewerGL:
 
     def enemy_animation(self):
         current_time = glfw.get_time()
-        elapsed_time = current_time - self.last_enemy_texture_change_time
 
         distance_traveled = self.objs[0].transformation.translation.length
 
@@ -442,6 +449,9 @@ class ViewerGL:
             # Play sound only when reaching the last frame of gruntidle list and enough time has passed since the last play
             if frame_index_idle == len(self.gruntidle) - 1 and current_time - self.last_sound_play_time >= self.sound_delay:
                 print("feu")
+                enemyshottouche = random.randint(1, 5)
+                if enemyshottouche >3:
+                    self.life -=5
                 sound_enemyfire = pygame.mixer.Sound('sounds/ar2_fire1.wav')
                 chan3 = pygame.mixer.find_channel()
                 chan3.queue(sound_enemyfire)
@@ -496,3 +506,12 @@ class ViewerGL:
             texture = glutils.load_texture(texture_path)
             self.update_object_texture(0, texture)
             
+
+
+
+
+    def update_gui(self):
+        print(self.usedammo)
+        self.objs[4].value = str(self.life)
+        self.objs[6].value = str(self.usedammo)
+        pass
