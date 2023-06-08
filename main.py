@@ -178,7 +178,7 @@ def main():
     viewer.add_object(o_gun)
 
     o_texture = glutils.load_texture(crowbar[0][0])
-    viewer.update_object_texture(1, o_texture)  # Assuming the gun object is at index 3
+    viewer.update_object_texture(291, o_texture)  # Assuming the gun object is at index 3
 
 
     texture = glutils.load_texture("crosshair.png")
@@ -186,7 +186,7 @@ def main():
     viewer.add_object(o_crosshair)
 
     o_texture = glutils.load_texture("crosshair.png")
-    viewer.update_object_texture(2, o_texture)  # Assuming the crosshair object is at index 2
+    viewer.update_object_texture(292, o_texture)  # Assuming the crosshair object is at index 2
 
 
 

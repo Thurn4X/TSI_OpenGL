@@ -433,7 +433,7 @@ class ViewerGL:
         new_position[1] = 0
 
         # Update the enemy's translation with the new position
-        self.objs[0].transformation.translation = new_position
+        self.objs[290].transformation.translation = new_position
 
     def enemy_animation(self):
         current_time = glfw.get_time()
