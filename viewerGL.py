@@ -56,7 +56,7 @@ class ViewerGL:
         self.reloadbolt = reloadbolt
         self.reloading = False
         self.etatgun = etatgun
-        self.texture_change_delay_fire = 0.02
+        self.texture_change_delay_fire = 0.01
         self.texture_change_delay_reload = 0.05
         self.enemy_texture_delay = 0.2
         self.enemyattack = False
@@ -181,7 +181,7 @@ class ViewerGL:
 
 
     def update_key(self):
-        translation_speed = 0.1
+        translation_speed = 0.4
         rotation_speed = 0.1
 
         # Update camera transformation based on pressed keys
@@ -199,12 +199,12 @@ class ViewerGL:
                 self.weapon = "glock"
                 self.current_texture_list = self.gun
                 texture = glutils.load_texture("sprites/Pistol/HW2Fa0.png")
-                self.update_object_texture(1, texture)
+                self.update_object_texture(291, texture)
             elif key == glfw.KEY_3:
                 self.weapon = "crowbar"
                 self.current_texture_list = self.crowbar[self.crowbar_indice]
                 texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
-                self.update_object_texture(1, texture)
+                self.update_object_texture(291, texture)
                 
 
 
@@ -373,7 +373,7 @@ class ViewerGL:
         if self.gun_index < len(texture_list):
             texture_path = texture_list[self.gun_index]
             texture = glutils.load_texture(texture_path)
-            self.update_object_texture(1, texture)  # Assuming the gun object is at index 3
+            self.update_object_texture(291, texture)  # Assuming the gun object is at index 3
             #print("changement de texture")
             self.gun_index += 1
 
@@ -406,7 +406,7 @@ class ViewerGL:
 ###
     def ennemis(self):
         # Get the enemy's position
-        enemy_position = self.objs[0].transformation.translation  # Assuming the enemy object is at index 0 in the objs list
+        enemy_position = self.objs[290].transformation.translation  # Assuming the enemy object is at index 0 in the objs list
 
         # Get the camera's position
         camera_position = self.cam.transformation.translation
@@ -415,10 +415,10 @@ class ViewerGL:
         angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
 
         # Update the enemy object's rotation around the y-axis
-        self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+        self.objs[290].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
 
         # Define the speed at which the enemy moves towards the camera
-        speed = 0.01
+        speed = 0.1
 
         # Calculate the direction from the enemy to the camera
         direction = camera_position - enemy_position
@@ -438,7 +438,7 @@ class ViewerGL:
     def enemy_animation(self):
         current_time = glfw.get_time()
 
-        distance_traveled = self.objs[0].transformation.translation.length
+        distance_traveled = self.objs[290].transformation.translation.length
 
         frame_index = 0  # Initialize frame_index with a default value
 
@@ -465,7 +465,7 @@ class ViewerGL:
 
         if frame_index != self.last_frame_index or self.enemyattack:
             texture = glutils.load_texture(texture_path)
-            self.update_object_texture(0, texture)  # Assuming the enemy object is at index 0
+            self.update_object_texture(290, texture)  # Assuming the enemy object is at index 0
             self.last_frame_index = frame_index
 
         self.last_enemy_texture_change_time = current_time
@@ -479,7 +479,7 @@ class ViewerGL:
 
             
     def check_enemy_distance(self):
-        enemy_position = self.objs[0].transformation.translation
+        enemy_position = self.objs[290].transformation.translation
         camera_position = self.cam.transformation.translation
         distance = np.linalg.norm(enemy_position - camera_position)
 
@@ -491,7 +491,7 @@ class ViewerGL:
         else:
             self.enemy_animation()
             self.enemyattack = True
-            enemy_position = self.objs[0].transformation.translation
+            enemy_position = self.objs[290].transformation.translation
 
             # Get the camera's position
             camera_position = self.cam.transformation.translation
@@ -500,13 +500,13 @@ class ViewerGL:
             angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
 
             # Update the enemy object's rotation around the y-axis
-            self.objs[0].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+            self.objs[290].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
             #print("l'ennemi est dans le rayon d'attaque")
 
             frame_index_idle = int(glfw.get_time() / self.enemy_texture_delay) % len(self.gruntidle)
             texture_path = self.gruntidle[frame_index_idle]
             texture = glutils.load_texture(texture_path)
-            self.update_object_texture(0, texture)
+            self.update_object_texture(290, texture)
             
 
 
@@ -514,6 +514,6 @@ class ViewerGL:
 
     def update_gui(self):
         print(self.usedammo)
-        self.objs[4].value = str(self.life)
-        self.objs[6].value = str(self.usedammo)
+        self.objs[294].value = str(self.life)
+        self.objs[296].value = str(self.usedammo)
         pass
