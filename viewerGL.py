@@ -10,13 +10,13 @@ import glutils
 import pygame
 from math import *
 import random
-
+from mesh import Mesh
 pygame.mixer.init(frequency = 44100, size = -16, channels = 3, buffer = 1012)
 pygame.mixer.Channel(0).set_volume(0.5)
 
 
 class ViewerGL:
-    def __init__(self, gun ,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,gruntmove,gruntidle):
+    def __init__(self, gun ,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,gruntmove,gruntidle,map_matrix):
         # initialisation de la librairie GLFW
         glfw.init()
         # paramétrage du context OpenGL
@@ -68,10 +68,11 @@ class ViewerGL:
         self.left_mouse_button_pressed = False  # Flag indicating if the left mouse button is pressed
         self.mouse_buttons = []
         self.ammo = ammo
-        self.boltammo = 1
+        self.boltammo = 30
         self.current_texture_list = self.crowbar[self.crowbar_indice]  # Initialize with the gun texture list
-        self.weapon = "crowbar"
+        self.weapon = "bolt"
         self.usedammo = 10
+        self.listeammo=[0,10,30]
         self.descente =1#variable saut
         self.ensaut = False
         self.translation_jump=0.1
@@ -79,7 +80,7 @@ class ViewerGL:
         self.ennemiposition=[[[2, 0, 2],[0, 0, 0], [0, 3, 0], [2, 3, 2]]]#liste de l'ennemi avec sa position
         self.last_sound_play_time = 0
         self.sound_delay = 0.5
-
+        self.map_matrix = map_matrix
 
     def run(self):
         #paramètres parabole pour le saut
@@ -101,6 +102,7 @@ class ViewerGL:
             self.update_gui()
             self.fire()
             self.check_enemy_distance()
+            self.check_position(self.cam.transformation.translation, self.map_matrix)
             if self.ensaut:
                     self.cam.transformation.translation.y = alpha*(glfw.get_time()-self.tinit-0.5)**2 + beta +2
                     if self.cam.transformation.translation.y <= 2:
@@ -116,11 +118,15 @@ class ViewerGL:
                     self.change_gun_texture(self.current_texture_list)  # Pass the gun texture list
                     self.last_texture_change_time = current_time
 
+
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
                 obj.draw()
+
             self.update_camera(self.objs[0].program)
                 
+
+
 
             if glfw.get_key(self.window, glfw.KEY_ESCAPE) == glfw.PRESS:
                 glfw.set_window_should_close(self.window, True)
@@ -130,6 +136,34 @@ class ViewerGL:
             glfw.poll_events()
 
         
+    def check_position(self, viewer_position, map_matrix):
+        cube = Mesh.load_obj('cube.obj')
+        cube_width = np.amax(cube.vertices, axis=0)[0] - np.amin(cube.vertices, axis=0)[0]
+        cube_height = np.amax(cube.vertices, axis=0)[1] - np.amin(cube.vertices, axis=0)[1]
+        cube_depth = np.amax(cube.vertices, axis=0)[2] - np.amin(cube.vertices, axis=0)[2]
+
+        viewer_offset_x = cube_width / 2.0
+        viewer_offset_z = cube_depth / 2.0
+
+        row = int((viewer_position.z + viewer_offset_z) / cube_depth)  # Calculate the row based on the viewer's position
+        col = int((viewer_position.x + viewer_offset_x) / cube_width)  # Calculate the column based on the viewer's position
+
+        print("Viewer Position:", viewer_position)
+        print("Row:", row)
+        print("Column:", col)
+
+        if row >= 0 and row < len(map_matrix) and col >= 0 and col < len(map_matrix[row]):
+            if map_matrix[row][col] == 2:
+                print("I am on a 2")
+                return False
+
+        return True
+
+
+
+
+
+
 
     
     def add_object(self, obj):
@@ -200,12 +234,20 @@ class ViewerGL:
                 self.current_texture_list = self.gun
                 texture = glutils.load_texture("sprites/Pistol/HW2Fa0.png")
                 self.update_object_texture(291, texture)
+                self.choixammo()
             elif key == glfw.KEY_3:
                 self.weapon = "crowbar"
                 self.current_texture_list = self.crowbar[self.crowbar_indice]
                 texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
                 self.update_object_texture(291, texture)
-                
+                self.choixammo()
+            
+            elif key == glfw.KEY_1:
+                self.weapon = "bolt"
+                self.choixammo()
+                self.current_texture_list = self.crowbar[self.crowbar_indice]
+                texture = glutils.load_texture("sprites/M16/HW3Fa0.png")
+                self.update_object_texture(291, texture)
 
 
         # Get the forward direction by transforming the default forward vector with the rotation matrix
@@ -223,13 +265,18 @@ class ViewerGL:
         # Update camera transformation based on pressed keys
         for key in self.key_pressed:
             if key == glfw.KEY_W or key == glfw.KEY_UP:
-                self.cam.transformation.translation -= forward * translation_speed  # Negate translation
+                if self.check_position(self.cam.transformation.translation - forward * translation_speed, self.map_matrix):
+                    self.cam.transformation.translation -= forward * translation_speed
             elif key == glfw.KEY_S or key == glfw.KEY_DOWN:
-                self.cam.transformation.translation += forward * translation_speed  # Negate translation
+                if self.check_position(self.cam.transformation.translation + forward * translation_speed, self.map_matrix):
+                    self.cam.transformation.translation += forward * translation_speed
             elif key == glfw.KEY_A or key == glfw.KEY_LEFT:
-                self.cam.transformation.translation += right * translation_speed  # Negate translation
+                if self.check_position(self.cam.transformation.translation + right * translation_speed, self.map_matrix):
+                    self.cam.transformation.translation += right * translation_speed
             elif key == glfw.KEY_D or key == glfw.KEY_RIGHT:
-                self.cam.transformation.translation -= right * translation_speed  # Negate translation
+                if self.check_position(self.cam.transformation.translation - right * translation_speed, self.map_matrix):
+                    self.cam.transformation.translation -= right * translation_speed
+
             elif key == glfw.KEY_Q:
                 self.cam.transformation.translation += pyrr.Vector3([0, translation_speed, 0])
             elif key == glfw.KEY_E:
@@ -249,16 +296,21 @@ class ViewerGL:
         if button == glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
             if self.reloading == False and not self.is_texture_loop_active:              
                 if self.weapon == "glock":
-                    if self.usedammo >0 :
+                    if self.usedammo > 0:
+                        pygame.mixer.Channel(0).fadeout(0)  # Stop the previous sound (fade out over 100 milliseconds)
                         pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/pistol_fire1.wav'))
                     else:
+                        pygame.mixer.Channel(0).fadeout(0)
                         pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/DRY.ogg'))
+
                 elif self.weapon == "bolt":
                     if self.usedammo >0:
+                        pygame.mixer.Channel(0).fadeout(0)  # Stop the previous sound (fade out over 100 milliseconds)
                         pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/bolt_fire.ogg'))
                     else:
                         self.reload()
                 elif self.weapon == "crowbar":
+                    pygame.mixer.Channel(0).fadeout(0)  # Stop the previous sound (fade out over 100 milliseconds)
                     pygame.mixer.Channel(0).play(pygame.mixer.Sound('sounds/cbar_miss1.wav'))
 
 
@@ -307,37 +359,47 @@ class ViewerGL:
 
     def choixammo(self):
         if self.weapon == "glock":
-            self.usedammo = self.ammo
+            self.usedammo = self.listeammo[1]
         elif self.weapon == "bolt":
-            self.usedammo = self.boltammo
+            self.usedammo = self.listeammo[2]
         elif self.weapon == "crowbar":
-            self.usedammo = 0
+            self.usedammo = self.listeammo[0]
 
     def fire(self):
+        print(self.listeammo)
         if self.reloading == False:
             if self.usedammo > 0 or self.weapon == "crowbar":
                 for button in self.mouse_buttons:
                     if button == glfw.MOUSE_BUTTON_LEFT and not self.is_texture_loop_active:
                         self.current_change_delay = self.texture_change_delay_fire
                         if self.weapon == "glock":
+                            self.listeammo[1] -= 1
+                            self.usedammo = self.listeammo[1]
                             self.current_texture_list = self.gun
                         elif self.weapon == "bolt":
+                            self.listeammo[2] -= 1
+                            self.usedammo = self.listeammo[2]
                             self.current_texture_list = self.bolt
                         elif self.weapon == "crowbar":
-                            print("la crowbar frappe")
+                            #print("la crowbar frappe")
                             self.current_texture_list = self.crowbar[self.crowbar_indice]
                             self.crowbar_indice +=1
-                            self.usedammo +=1
                             if self.crowbar_indice >2:
                                 self.crowbar_indice = 0
-                        self.usedammo -= 1  # Remove 1 from the ammo variable
+
                         self.change_gun_texture(self.current_texture_list)
                         self.last_texture_change_time = glfw.get_time()
                         self.is_texture_loop_active = True
             if self.usedammo == 0:
-                if self.weapon != "crowbar":
-                    self.usedammo +=10
+                if self.weapon == "glock":
+                    self.listeammo[1] = self.ammo
+                    self.usedammo = self.listeammo[1]
                     self.reload()
+                elif self.weapon == "bolt":
+                    self.listeammo[2] = self.boltammo
+                    self.usedammo = self.listeammo[2]
+                    self.reload()
+
 
     def reload(self):
         
@@ -354,9 +416,11 @@ class ViewerGL:
 
 
         elif self.weapon == "bolt":
-            sound_clipout = pygame.mixer.Sound('sounds/bolt_reload.ogg')
+            sound_clipout = pygame.mixer.Sound('sounds/CLIPOUT.ogg')
+            sound_clipin = pygame.mixer.Sound('sounds/CLIPIN.ogg')
             chan1 = pygame.mixer.find_channel()
             chan1.queue(sound_clipout)
+            chan1.queue(sound_clipin)
             self.current_texture_list = self.reloadbolt
 
         elif self.weapon == "crowbar":
@@ -374,7 +438,7 @@ class ViewerGL:
             texture_path = texture_list[self.gun_index]
             texture = glutils.load_texture(texture_path)
             self.update_object_texture(291, texture)  # Assuming the gun object is at index 3
-            #print("changement de texture")
+            ##print("changement de texture")
             self.gun_index += 1
 
         if self.gun_index >= len(texture_list):
@@ -450,7 +514,7 @@ class ViewerGL:
 
             # Play sound only when reaching the last frame of gruntidle list and enough time has passed since the last play
             if frame_index_idle == len(self.gruntidle) - 1 and current_time - self.last_sound_play_time >= self.sound_delay:
-                print("feu")
+                #print("feu")
                 enemyshottouche = random.randint(1, 5)
                 if enemyshottouche >3:
                     self.life -=5
@@ -486,7 +550,7 @@ class ViewerGL:
         if distance > 20:
             self.enemy_animation()
             self.ennemis()
-            print("troploin")
+            #print("troploin")
             self.enemyattack = False
         else:
             self.enemy_animation()
@@ -501,7 +565,7 @@ class ViewerGL:
 
             # Update the enemy object's rotation around the y-axis
             self.objs[290].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
-            #print("l'ennemi est dans le rayon d'attaque")
+            ##print("l'ennemi est dans le rayon d'attaque")
 
             frame_index_idle = int(glfw.get_time() / self.enemy_texture_delay) % len(self.gruntidle)
             texture_path = self.gruntidle[frame_index_idle]
@@ -513,7 +577,7 @@ class ViewerGL:
 
 
     def update_gui(self):
-        print(self.usedammo)
-        self.objs[294].value = str(self.life)
+        #print(self.usedammo)
+        self.objs[295].value = str(self.life)
         self.objs[296].value = str(self.usedammo)
         pass

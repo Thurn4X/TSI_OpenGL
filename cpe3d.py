@@ -23,6 +23,24 @@ class Object:
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
             GL.glDrawElements(GL.GL_TRIANGLES, 3*self.nb_triangle, GL.GL_UNSIGNED_INT, None)
 
+
+
+
+class Hitbox:
+    def __init__(self, width, height, x, y):
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
+
+    def collides_with(self, other_hitbox):
+        pass
+
+
+
+
+
+
 class Object3D(Object):
     def __init__(self, vao, nb_triangle, program, texture, transformation):
         super().__init__(vao, nb_triangle, program, texture)
@@ -57,6 +75,9 @@ class Object3D(Object):
 
         super().draw()
 
+
+
+
 class Camera():
     def __init__(self, transformation=Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')),
                 projection=pyrr.matrix44.create_perspective_projection(60, 1, 0.01, 100)):
@@ -83,6 +104,13 @@ class Camera():
         self.transformation.translate(vector)
         self.update_directions()
 
+    def projection_matrix(self):
+        return self.projection
+    
+    def view_matrix(self):
+        translation_matrix = pyrr.matrix44.create_from_translation(-self.transformation.translation)
+        rotation_matrix = pyrr.matrix44.create_from_matrix33(pyrr.matrix33.create_from_eulers(self.transformation.rotation_euler))
+        return rotation_matrix @ translation_matrix
 
 
 class Text(Object):
