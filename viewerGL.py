@@ -81,6 +81,7 @@ class ViewerGL:
         self.last_sound_play_time = 0
         self.sound_delay = 0.5
         self.map_matrix = map_matrix
+        self.sound_channel = None
 
     def run(self):
         #paramètres parabole pour le saut
@@ -215,11 +216,20 @@ class ViewerGL:
 
 
     def update_key(self):
+        sons = ["sounds/pl_tile1.wav","sounds/pl_tile2.wav","sounds/pl_tile3.wav","sounds/pl_tile4.wav","sounds/pl_tile5.wav"]
+        index = random.randint(0,4)
+        step_sound = sons[index]
+
         translation_speed = 0.4
         rotation_speed = 0.1
 
         # Update camera transformation based on pressed keys
         for key in self.key_pressed:
+            if self.sound_channel is None or not self.sound_channel.get_busy() and not self.ensaut:
+                self.sound_channel = pygame.mixer.find_channel()
+                self.sound_channel.fadeout(1000) 
+                self.sound_channel.play(pygame.mixer.Sound(step_sound))
+
             if key == glfw.KEY_I:
                 self.cam.transformation.rotation_euler[0] -= rotation_speed  # Negate rotation
             elif key == glfw.KEY_K:
