@@ -8,7 +8,10 @@ import pyrr
 
 
 def main():
-    gruntidle = ["sprites/Grunt1/HK1Oa1.png","sprites/Grunt1/HK1Ob1.png","sprites/Grunt1/HK1Oc1.png","sprites/Grunt1/gruntfire.png"]
+    slavedistance = ["sprites/slave/HLFNa1.png","sprites/slave/HLFNb1.png","sprites/slave/HLFNc1.png","sprites/slave/HLFNd1.png","sprites/slave/HLFNe1.png","sprites/slave/HLFNf1.png",]
+    slavecorpsacorps = ["sprites/slave/HLFIa1.png","sprites/slave/HLFMa1.png","sprites/slave/HLFMb1.png","sprites/slave/HLFMc1.png","sprites/slave/HLFMd1.png","sprites/slave/HLFMe1.png","sprites/slave/HLFMf1.png","sprites/slave/HLFMg1.png","sprites/slave/HLFMh1.png"]
+    slavemove = ["sprites/slave/HLFWa1.png","sprites/slave/HLFWb1.png","sprites/slave/HLFWc1.png","sprites/slave/HLFWd1.png","sprites/slave/HLFWe1.png","sprites/slave/HLFWf1.png",]
+    slaveball= ["sprites/slave/slave_bullet/X025A0.png","sprites/slave/slave_bullet/X025B0.png","sprites/slave/slave_bullet/X025C0.png","sprites/slave/slave_bullet/X025D0.png","sprites/slave/slave_bullet/X025E0.png","sprites/slave/slave_bullet/X025F0.png","sprites/slave/slave_bullet/X025G0.png","sprites/slave/slave_bullet/X025H0.png","sprites/slave/slave_bullet/X025I0.png","sprites/slave/slave_bullet/X025J0.png","sprites/slave/slave_bullet/X025K0.png"]
     gruntmove=["sprites/Grunt1/HK1Ra1.png","sprites/Grunt1/HK1Rb1.png","sprites/Grunt1/HK1Rc1.png","sprites/Grunt1/HK1Rd1.png","sprites/Grunt1/HK1Re1.png","sprites/Grunt1/HK1Rf1.png",]
     crowbar =[["sprites/Crowbar/crowbar1.png","sprites/Crowbar/crowbar2.png","sprites/Crowbar/crowbar3.png","sprites/Crowbar/crowbar4.png","sprites/Crowbar/crowbar5.png","sprites/Crowbar/crowbar6.png","sprites/Crowbar/crowbar7.png","sprites/Crowbar/crowbar1.png"],["sprites/Crowbar/crowbar7.png","sprites/Crowbar/crowbar8.png","sprites/Crowbar/crowbar9.png","sprites/Crowbar/crowbar10.png","sprites/Crowbar/crowbar11.png","sprites/Crowbar/crowbar12.png","sprites/Crowbar/crowbar13.png","sprites/Crowbar/crowbar14.png","sprites/Crowbar/crowbar15.png","sprites/Crowbar/crowbar7.png"],["sprites/Crowbar/crowbar15.png","sprites/Crowbar/crowbar16.png","sprites/Crowbar/crowbar17.png","sprites/Crowbar/crowbar18.png","sprites/Crowbar/crowbar19.png","sprites/Crowbar/crowbar20.png","sprites/Crowbar/crowbar21.png","sprites/Crowbar/crowbar22.png","sprites/Crowbar/crowbar23.png","sprites/Crowbar/crowbar24.png","sprites/Crowbar/crowbar25.png","sprites/Crowbar/crowbar26.png","sprites/Crowbar/crowbar27.png","sprites/Crowbar/crowbar15.png"]]
     bolt = ["sprites/M16/HW3Fa0.png","sprites/M16/HW3Fb0.png","sprites/M16/HW3Fc0.png","sprites/M16/HW3Fd0.png","sprites/M16/HW3Fe0.png","sprites/M16/HW3Ff0.png",]
@@ -48,7 +51,15 @@ def main():
 
     ]
 
-    viewer = ViewerGL(gun,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,gruntmove,gruntidle,map_matrix)
+
+    ballobject = 3
+
+
+
+
+
+
+    viewer = ViewerGL(gun,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,slavemove,slavedistance,map_matrix,slavecorpsacorps,slaveball,ballobject)
     viewer.set_camera(Camera())
     viewer.cam.transformation.translation.y = 2
     viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
@@ -56,6 +67,7 @@ def main():
     program3d_id = glutils.create_program_from_file('shader.vert', 'shader.frag')
     programGUI_id = glutils.create_program_from_file('gui.vert', 'gui.frag')
     programIMG_id= glutils.create_program_from_file('image.vert', 'image.frag')
+
 
 
 
@@ -74,10 +86,9 @@ def main():
 
 
 
-
     texture_paths = {
     0: 'grass.jpg',
-    2: 'evenbiggerwall.png',
+    2: 'murblanc.png',
     }
 
     # Load the textures
@@ -104,7 +115,7 @@ def main():
 
 
     m = Mesh()
-    p0, p1, p2, p3 = [-1, 0, -50], [60, 0, -50], [60, 0, 0], [-1, 0, 0]
+    p0, p1, p2, p3 = [-1, 0, 50], [60, 0, 50], [60, 0, 0], [-1, 0, 0]
     n, c = [0, 1, 0], [1, 1, 1]
     t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30]  # Modify the UV coordinates
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
@@ -112,7 +123,6 @@ def main():
     texture = glutils.load_texture('tilefinale.png')  # Replace 'grass.jpg' with 'tilefinale.png'
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
     viewer.add_object(o)
-
 
 
 
@@ -143,18 +153,30 @@ def main():
     #viewer.add_object(o)
 
     m = Mesh()
-    #variables carré méchant 2D
-    p0, p1, p2, p3 =  [1.5, 0, 1.5],[0, 0, 0], [0, 2.5, 0], [1.5, 2.5, 1.5]
+    # Variables carré méchant 2D
+    p0, p1, p2, p3 = [1.5, 0, 1.5], [0, 0, 0], [0, 2.5, 0], [1.5, 2.5, 1.5]
     n, c = [0, 1, 0], [1, 1, 1]
     t0, t1, t2, t3 = [0, 0], [1, 0], [1, 1], [0, 1]
-    #définition carré
+    # Définition carré
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
 
-    #ajout texture
+    # Define the center position of the square
+    square_center = np.array([0.75, 0, 0.75])  # Adjust the values based on the desired center position
+
+    # Reshape square_center to match the shape of m.vertices[:, :3]
+    square_center = square_center.reshape((1, 1, 3))
+
+    # Modify the vertices to adjust the center position
+    m.vertices[..., :3] -= square_center
+
+
+
+    # Ajout texture
     texture = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
     viewer.add_object(o)
+
 
 
     #m = Mesh.load_obj('DUST2.obj')
@@ -163,7 +185,7 @@ def main():
     #tr = Transformation3D()
     #tr.translation.y = -np.amin(m.vertices, axis=0)[1]
     #tr.translation.z = -5
-    #tr.rotation_center.z = 0.2
+    #tr.rotation_center.z = 0.2s
     #texture = glutils.load_texture('doom_voxel_marines.png')
     #o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
     #viewer.add_object(o)
@@ -204,17 +226,7 @@ def main():
     viewer.add_object(o_lifevalue)
     #viewer.add_object(o_ammo)
     viewer.add_object(o_ammovalue)
-
-   
-
-
-
-
-
     viewer.run()
 
-
-
-    
 if __name__ == '__main__':
     main()
