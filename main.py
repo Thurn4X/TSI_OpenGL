@@ -62,6 +62,7 @@ def main():
     viewer = ViewerGL(gun,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,slavemove,slavedistance,map_matrix,slavecorpsacorps,slaveball,ballobject)
     viewer.set_camera(Camera())
     viewer.cam.transformation.translation.y = 2
+    viewer.cam.transformation.translation.z = 28
     viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
 
     program3d_id = glutils.create_program_from_file('shader.vert', 'shader.frag')
@@ -124,6 +125,14 @@ def main():
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
     viewer.add_object(o)
 
+    p0, p1, p2, p3 = [-1, 4, 50], [60, 4, 50], [60, 4, 0], [-1, 4, 0]
+    n, c = [0, 1, 0], [1, 1, 1]
+    t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30]  # Modify the UV coordinates
+    m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
+    m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
+    texture = glutils.load_texture('Xplaf.png')  # Replace 'grass.jpg' with 'tilefinale.png'
+    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
+    viewer.add_object(o)
 
 
     #m = Mesh.load_obj('doom_voxel_marines.obj')
@@ -172,9 +181,12 @@ def main():
 
 
 
+
     # Ajout texture
     texture = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
+
+
     viewer.add_object(o)
 
 
@@ -190,6 +202,42 @@ def main():
     #o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
     #viewer.add_object(o)
 
+    p0, p1, p2, p3 = [0.5, 0, 0.5], [0, 0, 0], [0, 1, 0], [0.5, 1, 0.5]
+    n, c = [0, 1, 0], [1, 1, 1]
+    t0, t1, t2, t3 = [0, 0], [1, 0], [1, 1], [0, 1]
+    # Définition carré
+    m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
+    m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
+
+    # Define the center position of the square
+    square_center = np.array([0.25, 0, 0.25])  # Adjust the values based on the desired center position
+
+    # Reshape square_center to match the shape of m.vertices[:, :3]
+    square_center = square_center.reshape((1, 1, 3))
+
+    # Modify the vertices to adjust the center position
+    m.vertices[..., :3] -= square_center
+
+    # Ajout texture
+    texturepistol = glutils.load_texture("sprites/DEPIA0.png")
+    spritegun = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturepistol, Transformation3D())
+    spritegun.transformation.translation.x = 5
+    spritegun.transformation.translation.z = 5
+    texturem16 = glutils.load_texture("sprites/M16.png")
+    spritegun = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturepistol, Transformation3D())
+    spritegun.transformation.translation.x = 5
+    spritegun.transformation.translation.z = 5
+
+
+    viewer.add_object(spritegun)
+
+    spritem16 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturem16, Transformation3D())
+    spritem16.transformation.translation.x = 55
+    spritem16.transformation.translation.z = 5
+    viewer.add_object(spritem16)
+
+
+
 
     vao = Image.initialize_geometry()
     texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
@@ -197,7 +245,7 @@ def main():
     viewer.add_object(o_gun)
 
     o_texture = glutils.load_texture(crowbar[0][0])
-    viewer.update_object_texture(291, o_texture)  # Assuming the gun object is at index 3
+    viewer.update_object_texture(294, o_texture)  # Assuming the gun object is at index 3
 
 
     texture = glutils.load_texture("crosshair.png")
@@ -205,7 +253,7 @@ def main():
     viewer.add_object(o_crosshair)
 
     o_texture = glutils.load_texture("crosshair.png")
-    viewer.update_object_texture(292, o_texture)  # Assuming the crosshair object is at index 2
+    viewer.update_object_texture(295, o_texture)  # Assuming the crosshair object is at index 2
 
 
     texture = glutils.load_texture("i_health.png")
