@@ -1,7 +1,7 @@
 from viewerGL import ViewerGL
 import glutils
 from mesh import Mesh
-from cpe3d import Object3D, Camera, Transformation3D,Text,Image,Hitbox
+from cpe3d import Object3D, Camera, Transformation3D,Text,Image
 import numpy as np
 import OpenGL.GL as GL
 import pyrr
@@ -62,7 +62,7 @@ def main():
     viewer.cam.transformation.translation.x = 2
     viewer.cam.transformation.translation.z = 28
     viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
-
+    #on a set la camera
     program3d_id = glutils.create_program_from_file('shader.vert', 'shader.frag')
     programGUI_id = glutils.create_program_from_file('gui.vert', 'gui.frag')
     programIMG_id= glutils.create_program_from_file('image.vert', 'image.frag')
@@ -104,48 +104,42 @@ def main():
                 o = Object3D(cube.load_to_gpu(), cube.get_nb_triangles(), program3d_id, texture, tr)
                 viewer.add_object(o)
 
-
+    #on a créé une map avec des objs de carré pour les 2 de la matrice, et des espaces vides pour les 1 de la matrice.
 
 
 
 
     m = Mesh()
-    p0, p1, p2, p3 = [-1, 0, 50], [60, 0, 50], [60, 0, 0], [-1, 0, 0]
+    p0, p1, p2, p3 = [-1, 0, 50], [80, 0, 50], [80, 0, 0], [-1, 0, 0]
     n, c = [0, 1, 0], [1, 1, 1]
     t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30] 
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
     texture = glutils.load_texture('tilefinale.png')
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
-    viewer.add_object(o)#318
+    viewer.add_object(o)#le plancher
 
-    p0, p1, p2, p3 = [-1, 4, 50], [60, 4, 50], [60, 4, 0], [-1, 4, 0]
+    p0, p1, p2, p3 = [-1, 4, 50], [80, 4, 50], [80, 4, 0], [-1, 4, 0]
     n, c = [0, 1, 0], [1, 1, 1]
     t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30] 
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
     texture = glutils.load_texture('Xplaf.png') 
     plafondobj = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
-    plafondobj.transformation.translation.x = 100
-    viewer.add_object(plafondobj)
+    viewer.add_object(plafondobj)#le plafond
 
 
     # Variables carré méchant 2D
     p0, p1, p2, p3 = [1.5, 0, 1.5], [0, 0, 0], [0, 2.5, 0], [1.5, 2.5, 1.5]
     n, c = [0, 1, 0], [1, 1, 1]
     t0, t1, t2, t3 = [0, 0], [1, 0], [1, 1], [0, 1]
-    # Définition carré
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
-
-    # Define the center position of the square
     square_center = np.array([0.75, 0, 0.75]) 
 
 
     square_center = square_center.reshape((1, 1, 3))
     m.vertices[..., :3] -= square_center
-
-    # Ajout texture
     texturevorti = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
 
     vorti = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturevorti, Transformation3D())
@@ -153,9 +147,8 @@ def main():
 
     vorti.transformation.translation.x = 62
     vorti.transformation.translation.z = 30
-    viewer.add_object(vorti)#319
-    #viewer.add_object(zombard1)
-    #viewer.add_object(zombard2)
+    viewer.add_object(vorti)#l'ennemi de la fin
+
 
     p0, p1, p2, p3 = [0.5, 0, 0.5], [0, 0, 0], [0, 1, 0], [0.5, 1, 0.5]
     n, c = [0, 1, 0], [1, 1, 1]
@@ -163,23 +156,23 @@ def main():
     # Définition carré
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
-
-    # Define the center position of the square
     square_center = np.array([0.25, 0, 0.25])
-
     square_center = square_center.reshape((1, 1, 3))
     m.vertices[..., :3] -= square_center
 
     # Ajout texture
     texturepistol = glutils.load_texture("sprites/DEPIA0.png")
+
     spritegun = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturepistol, Transformation3D())
     spritegun.transformation.translation.x = 7
     spritegun.transformation.translation.z = 5
+
     texturem16 = glutils.load_texture("sprites/M16.png")
+
     texturebullet = glutils.load_texture("sprites/slave/slave_bullet/X025A0.png")
 
 
-    viewer.add_object(spritegun)#320
+    viewer.add_object(spritegun)#le pistolet qui tourne par terre
 
     spritem16 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturem16, Transformation3D())
     spritem16.transformation.translation.x = 55
@@ -188,8 +181,8 @@ def main():
     spritebullet = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturebullet, Transformation3D())
     spritebullet.transformation.translation.x = 100
 
-    viewer.add_object(spritem16)#321
-    viewer.add_object(spritebullet)#322
+    viewer.add_object(spritem16)#le gun qui tourne par terre
+    viewer.add_object(spritebullet)#le projectile de l'ennemi
 
 
 
@@ -206,43 +199,39 @@ def main():
     textureportail = glutils.load_texture("portail.png")
     portailobj = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, textureportail, Transformation3D())
     portailobj.transformation.translation.x = -157
-    viewer.add_object(portailobj)#323
+    viewer.add_object(portailobj)#le portail de fin
 
     vao = Image.initialize_geometry()
     texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
     o_gun = Image("sprites/Crowbar/crowbar1.png", np.array([-0.7, -1], np.float32), np.array([0.7, 0.8], np.float32), vao, 2, programIMG_id, texture)
-    viewer.add_object(o_gun)#-7
+    viewer.add_object(o_gun)#le pistolet/crowbar/gun dans la main
 
     o_texture = glutils.load_texture(crowbar[0][0])
-    viewer.update_object_texture(328, o_texture)  # Assuming the gun object is at index 3
+    viewer.update_object_texture(328, o_texture)
 
 
     texture = glutils.load_texture("crosshair.png")
     o_crosshair = Image("crosshair.png", np.array([-0.02, -0.05], np.float32), np.array([0.02, 0.05], np.float32), vao, 2, programIMG_id, texture)
-    viewer.add_object(o_crosshair)
+    viewer.add_object(o_crosshair)#le crosshair
 
     o_texture = glutils.load_texture("crosshair.png")
-    viewer.update_object_texture(329, o_texture)  # Assuming the crosshair object is at index 2
+    viewer.update_object_texture(329, o_texture)
 
 
     texture = glutils.load_texture("i_health.png")
     o = Image("i_health.png", np.array([-0.95, -1], np.float32), np.array([-0.85, -0.7], np.float32), vao, 2, programIMG_id, texture)
-    viewer.add_object(o)
+    viewer.add_object(o)#l'icone de vie
 
     texture = glutils.load_texture("i_bul3.png")
     o = Image("i_bul3.png", np.array([0.55, -0.95], np.float32), np.array([0.65, -0.7], np.float32), vao, 2, programIMG_id, texture)
-    viewer.add_object(o)
+    viewer.add_object(o)#l'icone de munitions
 
     vao = Text.initalize_geometry()
     texture = glutils.load_texture('fontB.jpg')
-    #o = Text('HP :', np.array([-1, -0.95], np.float32), np.array([-0.75,-0.8], np.float32), vao, 2, programGUI_id, texture)
     o_lifevalue = Text('100', np.array([-0.75, -1], np.float32), np.array([-0.60,-0.75], np.float32), vao, 2, programGUI_id, texture)
-    #o_ammo = Text('MUN :', np.array([0.45, -0.95], np.float32), np.array([0.65,-0.8], np.float32), vao, 2, programGUI_id, texture)
     o_ammovalue = Text('0', np.array([0.7, -0.95], np.float32), np.array([0.8,-0.8], np.float32), vao, 2, programGUI_id, texture)
-    #viewer.add_object(o)
-    viewer.add_object(o_lifevalue)
-    #viewer.add_object(o_ammo)
-    viewer.add_object(o_ammovalue)
+    viewer.add_object(o_lifevalue)#le nombre représentant la vie sur l'ecran
+    viewer.add_object(o_ammovalue)#le nombre representant les munitions a l'ecran
     viewer.run()
 
 if __name__ == '__main__':
