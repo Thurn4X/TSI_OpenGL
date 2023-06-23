@@ -8,6 +8,9 @@ import pyrr
 
 
 def main():
+    zombieattack = ["sprites/zombie/HLEAa1.png","sprites/zombie/HLEAb1.png","sprites/zombie/HLEAc1.png","sprites/zombie/HLEAd1.png","sprites/zombie/HLEAe1.png","sprites/zombie/HLEAf1.png","sprites/zombie/HLEAg1.png","sprites/zombie/HLEAh1.png","sprites/zombie/HLEAi1.png","sprites/zombie/HLEAj1.png",]
+    zombiemove = ["sprites/zombie/HLEWa1.png","sprites/zombie/HLEWb1.png","sprites/zombie/HLEWc1.png","sprites/zombie/HLEWd1.png","sprites/zombie/HLEWe1.png","sprites/zombie/HLEWf1.png","sprites/zombie/HLEWg1.png"]
+    slavedeath = ["sprites/slave/HLFDa0.png","sprites/slave/HLFDb0.png","sprites/slave/HLFDc0.png","sprites/slave/HLFDd0.png","sprites/slave/HLFDe0.png","sprites/slave/HLFDf0.png","sprites/slave/HLFDg0.png","sprites/slave/HLFDh0.png","sprites/slave/HLFDj0.png","sprites/slave/HLFDk0.png","sprites/slave/HLFDl0.png","sprites/slave/HLFDm0.png","sprites/slave/HLFDn0.png"]
     slavedistance = ["sprites/slave/HLFNa1.png","sprites/slave/HLFNb1.png","sprites/slave/HLFNc1.png","sprites/slave/HLFNd1.png","sprites/slave/HLFNe1.png","sprites/slave/HLFNf1.png",]
     slavecorpsacorps = ["sprites/slave/HLFIa1.png","sprites/slave/HLFMa1.png","sprites/slave/HLFMb1.png","sprites/slave/HLFMc1.png","sprites/slave/HLFMd1.png","sprites/slave/HLFMe1.png","sprites/slave/HLFMf1.png","sprites/slave/HLFMg1.png","sprites/slave/HLFMh1.png"]
     slavemove = ["sprites/slave/HLFWa1.png","sprites/slave/HLFWb1.png","sprites/slave/HLFWc1.png","sprites/slave/HLFWd1.png","sprites/slave/HLFWe1.png","sprites/slave/HLFWf1.png",]
@@ -22,46 +25,41 @@ def main():
     ammo = 10
 
     map_matrix = [
-        [1,1,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2],
-        [1,2,1,1,1,2,2,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,2,2,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,1,1,1,1,1,2,1,1,1,2,2,2,2,2,2,2,2,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,1,2],
-        [1,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,1,2,1,1,1,1,1,2],
-        [1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,2,2],
-        [1,1,1,1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,2,1],
-        [1,1,2,2,2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,1,2,1],
-        [1,1,2,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,2,1,1,1,1,1,1,2,1,2,1],
-        [2,2,2,1,2,1,1,1,1,1,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,2,1,2,2],
-        [1,1,1,1,2,2,2,2,2,2,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,2],
-        [2,2,2,1,2,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1],
-        [1,1,2,1,2,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,2],
-        [1,1,2,1,2,2,2,1,1,2,1,2,2,1,1,1,1,1,1,2,2,1,1,1,1,2,2,1,2,1],
-        [1,1,2,1,1,1,2,1,1,2,1,2,2,2,2,2,2,1,2,2,2,1,2,1,1,2,2,1,2,2],
-        [1,1,2,2,2,1,2,2,1,2,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2],
-        [1,1,1,2,1,1,1,2,2,2,1,2,2,2,2,2,2,1,2,2,2,2,2,1,1,1,1,1,1,2],
-        [1,1,1,2,1,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
-        [1,1,1,2,1,1,1,2,2,2,1,2,2,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
-        [1,1,1,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
-        [1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2],
+        [1,1,1,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2],
+        [1,1,2,1,1,1,2,2,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,2,2,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,1,1,1,1,1,2,1,1,1,2,2,2,2,2,2,2,2,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,1,2],
+        [1,1,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,1,2,1,1,1,1,1,2],
+        [1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2],
+        [1,1,1,1,1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1,1,2],
+        [1,1,1,2,2,2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,1,2,2,1,1,1,1,1,1,1,1,2],
+        [1,1,1,2,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,2,1,1,1,1,1,1,2,1,2,2,1,1,1,1,1,1,1,1,2],
+        [1,2,2,2,1,2,1,1,1,1,1,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,2,1,2,2,1,1,1,1,1,1,1,1,2],
+        [2,1,1,1,1,2,2,2,2,2,2,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,1,1,1,2],
+        [1,2,2,2,1,2,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,2],
+        [1,1,1,2,1,2,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,2,1,1,1,1,1,1,1,1,2],
+        [1,1,1,2,1,2,2,2,1,1,2,1,2,2,1,1,1,1,1,1,2,2,1,1,1,1,2,2,1,2,1,1,1,1,1,1,1,1,1,2],
+        [1,1,1,2,1,1,1,2,1,1,2,1,2,2,2,2,2,2,1,2,2,2,1,2,1,1,2,2,1,2,2,1,1,1,1,1,1,1,1,2],
+        [1,1,1,2,2,2,1,2,2,1,2,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2],
+        [1,1,1,1,2,1,1,1,2,2,2,1,2,2,2,2,2,2,1,2,2,2,2,2,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2],
+        [1,1,1,1,2,1,1,1,1,1,2,1,2,2,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2],
+        [1,1,1,1,2,1,1,1,2,2,2,1,2,2,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
+        [1,1,1,1,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,2],
+        [1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2],
 
 
     ]
 
 
-    ballobject = 3
 
-
-
-
-
-
-    viewer = ViewerGL(gun,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,slavemove,slavedistance,map_matrix,slavecorpsacorps,slaveball,ballobject)
+    viewer = ViewerGL(gun,etatgun,ammo,reloadglock,bolt,reloadbolt,crowbar,slavemove,slavedistance,map_matrix,slavecorpsacorps,zombieattack,zombiemove,slavedeath)
     viewer.set_camera(Camera())
     viewer.cam.transformation.translation.y = 2
+    viewer.cam.transformation.translation.x = 2
     viewer.cam.transformation.translation.z = 28
     viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
 
@@ -76,12 +74,9 @@ def main():
 
     cube = Mesh.load_obj('cube.obj')
     cube_width = np.amax(cube.vertices, axis=0)[0] - np.amin(cube.vertices, axis=0)[0]
-    cube_height = np.amax(cube.vertices, axis=0)[1] - np.amin(cube.vertices, axis=0)[1]
     cube_depth = np.amax(cube.vertices, axis=0)[2] - np.amin(cube.vertices, axis=0)[2]
     cube.normalize()
-    cube_scale = min(1.0, 4.0 / cube_width)  # Adjust the desired scale of the cubes
     cube.apply_matrix(pyrr.matrix44.create_from_scale([1, 2, 1, 1]))
-
 
 
 
@@ -92,7 +87,6 @@ def main():
     2: 'murblanc.png',
     }
 
-    # Load the textures
     textures = {}
     for value, path in texture_paths.items():
         textures[value] = glutils.load_texture(path)
@@ -101,11 +95,11 @@ def main():
     for row in range(len(map_matrix)):
         for col in range(len(map_matrix[row])):
             if map_matrix[row][col] == 2:
-                texture = textures[2]  # Use the texture for 2s
+                texture = textures[2]
                 tr = Transformation3D()
-                tr.translation.x = col * cube_width  # Keep the translation sign as it is
+                tr.translation.x = col * cube_width
                 tr.translation.y = -np.amin(cube.vertices, axis=0)[1] 
-                tr.translation.z = row * cube_depth  # Keep the translation sign as it is
+                tr.translation.z = row * cube_depth
                 tr.rotation_center.z = 0.2
                 o = Object3D(cube.load_to_gpu(), cube.get_nb_triangles(), program3d_id, texture, tr)
                 viewer.add_object(o)
@@ -118,50 +112,24 @@ def main():
     m = Mesh()
     p0, p1, p2, p3 = [-1, 0, 50], [60, 0, 50], [60, 0, 0], [-1, 0, 0]
     n, c = [0, 1, 0], [1, 1, 1]
-    t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30]  # Modify the UV coordinates
+    t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30] 
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
-    texture = glutils.load_texture('tilefinale.png')  # Replace 'grass.jpg' with 'tilefinale.png'
+    texture = glutils.load_texture('tilefinale.png')
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
-    viewer.add_object(o)
+    viewer.add_object(o)#318
 
     p0, p1, p2, p3 = [-1, 4, 50], [60, 4, 50], [60, 4, 0], [-1, 4, 0]
     n, c = [0, 1, 0], [1, 1, 1]
-    t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30]  # Modify the UV coordinates
+    t0, t1, t2, t3 = [0, 0], [30, 0], [30, 30], [0, 30] 
     m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
-    texture = glutils.load_texture('Xplaf.png')  # Replace 'grass.jpg' with 'tilefinale.png'
-    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
-    viewer.add_object(o)
+    texture = glutils.load_texture('Xplaf.png') 
+    plafondobj = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
+    plafondobj.transformation.translation.x = 100
+    viewer.add_object(plafondobj)
 
 
-    #m = Mesh.load_obj('doom_voxel_marines.obj')
-    #m.normalize()
-    #m.apply_matrix(pyrr.matrix44.create_from_scale([3, 3, 3, 1]))
-    #tr = Transformation3D()
-    #tr.translation.y = -np.amin(m.vertices, axis=0)[1]
-    #tr.translation.z = -5
-    #tr.rotation_center.z = 0.2
-    #texture = glutils.load_texture('doom_voxel_marines.png')
-    #o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
-    #viewer.add_object(o)
-
-    #m = Mesh()
-    #p0, p1, p2, p3 = [-1, 0, -1], [1, 0, -1], [1, 0, 1], [-1, 0, 1]
-    #n, c = [0, 1, 0], [1, 1, 1]
-    #t0, t1, t2, t3 = [0, 0], [1, 0], [1, 1], [0, 1]
-    #m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
-    #m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
-    #texture = glutils.load_texture('XCONC11.png')
-    #o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
-    #viewer.add_object(o)
-
-    #vao = Text.initalize_geometry()
-    #texture = glutils.load_texture('fontB.jpg')
-    #o = Text('3ETI', np.array([-1, -1], np.float32), np.array([1, 0.2], np.float32), vao, 2, programGUI_id, texture)
-    #viewer.add_object(o)
-
-    m = Mesh()
     # Variables carré méchant 2D
     p0, p1, p2, p3 = [1.5, 0, 1.5], [0, 0, 0], [0, 2.5, 0], [1.5, 2.5, 1.5]
     n, c = [0, 1, 0], [1, 1, 1]
@@ -171,36 +139,24 @@ def main():
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
 
     # Define the center position of the square
-    square_center = np.array([0.75, 0, 0.75])  # Adjust the values based on the desired center position
+    square_center = np.array([0.75, 0, 0.75]) 
 
-    # Reshape square_center to match the shape of m.vertices[:, :3]
+
     square_center = square_center.reshape((1, 1, 3))
-
-    # Modify the vertices to adjust the center position
     m.vertices[..., :3] -= square_center
 
-
-
-
     # Ajout texture
-    texture = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
-    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, Transformation3D())
+    texturevorti = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
+    texturezombie = glutils.load_texture("sprites/zombie/HLEAa1.png")
+    vorti = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturevorti, Transformation3D())
+    zombard1 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturezombie, Transformation3D())
+    zombard2 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturezombie, Transformation3D())
 
-
-    viewer.add_object(o)
-
-
-
-    #m = Mesh.load_obj('DUST2.obj')
-    #m.normalize()
-    #m.apply_matrix(pyrr.matrix44.create_from_scale([40, 40, 40, 1]))
-    #tr = Transformation3D()
-    #tr.translation.y = -np.amin(m.vertices, axis=0)[1]
-    #tr.translation.z = -5
-    #tr.rotation_center.z = 0.2s
-    #texture = glutils.load_texture('doom_voxel_marines.png')
-    #o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
-    #viewer.add_object(o)
+    vorti.transformation.translation.x = 62
+    vorti.transformation.translation.z = 30
+    viewer.add_object(vorti)#319
+    #viewer.add_object(zombard1)
+    #viewer.add_object(zombard2)
 
     p0, p1, p2, p3 = [0.5, 0, 0.5], [0, 0, 0], [0, 1, 0], [0.5, 1, 0.5]
     n, c = [0, 1, 0], [1, 1, 1]
@@ -210,42 +166,56 @@ def main():
     m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
 
     # Define the center position of the square
-    square_center = np.array([0.25, 0, 0.25])  # Adjust the values based on the desired center position
+    square_center = np.array([0.25, 0, 0.25])
 
-    # Reshape square_center to match the shape of m.vertices[:, :3]
     square_center = square_center.reshape((1, 1, 3))
-
-    # Modify the vertices to adjust the center position
     m.vertices[..., :3] -= square_center
 
     # Ajout texture
     texturepistol = glutils.load_texture("sprites/DEPIA0.png")
     spritegun = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturepistol, Transformation3D())
-    spritegun.transformation.translation.x = 5
+    spritegun.transformation.translation.x = 7
     spritegun.transformation.translation.z = 5
     texturem16 = glutils.load_texture("sprites/M16.png")
-    spritegun = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturepistol, Transformation3D())
-    spritegun.transformation.translation.x = 5
-    spritegun.transformation.translation.z = 5
+    texturebullet = glutils.load_texture("sprites/slave/slave_bullet/X025A0.png")
 
 
-    viewer.add_object(spritegun)
+    viewer.add_object(spritegun)#320
 
     spritem16 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturem16, Transformation3D())
     spritem16.transformation.translation.x = 55
     spritem16.transformation.translation.z = 5
-    viewer.add_object(spritem16)
+
+    spritebullet = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturebullet, Transformation3D())
+    spritebullet.transformation.translation.x = 100
+
+    viewer.add_object(spritem16)#321
+    viewer.add_object(spritebullet)#322
 
 
 
+    p0, p1, p2, p3 = [0, 0, -1], [0, 4, -1], [0, 4, 1], [0, 0, 1]
+    n, c = [0, 1, 0], [1, 1, 1]
+    t0, t1, t2, t3 = [0, 0], [1, 0], [1, 1], [0, 1]
+    # Définition carré
+    m.vertices = np.array([[p0 + n + c + t0], [p1 + n + c + t1], [p2 + n + c + t2], [p3 + n + c + t3]], np.float32)
+    m.faces = np.array([[0, 1, 2], [0, 2, 3]], np.uint32)
+
+    # Ajout texture
+
+
+    textureportail = glutils.load_texture("portail.png")
+    portailobj = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, textureportail, Transformation3D())
+    portailobj.transformation.translation.x = -157
+    viewer.add_object(portailobj)#323
 
     vao = Image.initialize_geometry()
     texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
     o_gun = Image("sprites/Crowbar/crowbar1.png", np.array([-0.7, -1], np.float32), np.array([0.7, 0.8], np.float32), vao, 2, programIMG_id, texture)
-    viewer.add_object(o_gun)
+    viewer.add_object(o_gun)#-7
 
     o_texture = glutils.load_texture(crowbar[0][0])
-    viewer.update_object_texture(294, o_texture)  # Assuming the gun object is at index 3
+    viewer.update_object_texture(328, o_texture)  # Assuming the gun object is at index 3
 
 
     texture = glutils.load_texture("crosshair.png")
@@ -253,7 +223,7 @@ def main():
     viewer.add_object(o_crosshair)
 
     o_texture = glutils.load_texture("crosshair.png")
-    viewer.update_object_texture(295, o_texture)  # Assuming the crosshair object is at index 2
+    viewer.update_object_texture(329, o_texture)  # Assuming the crosshair object is at index 2
 
 
     texture = glutils.load_texture("i_health.png")
@@ -278,3 +248,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+

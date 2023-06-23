@@ -3,20 +3,20 @@ import OpenGL.GL as GL
 import glfw
 import pyrr
 import numpy as np
-from cpe3d import Object3D,Transformation3D
+from cpe3d import Object3D,Transformation3D,Image,Text
 from pyrr import Matrix44, Vector3
-import os,sys, time
 import glutils
 import pygame
 from math import *
 import random
+import time
 from mesh import Mesh
 pygame.mixer.init(frequency = 44100, size = -16, channels = 3, buffer = 1012)
 pygame.mixer.Channel(0).set_volume(0.5)
 
 
 class ViewerGL:
-    def __init__(self, gun ,etatgun,ammo,reloadglock,m16,reloadm16,crowbar,gruntmove,gruntidle,map_matrix,slavecorpsacorps,slaveball,ballobject):
+    def __init__(self, gun ,etatgun,ammo,reloadglock,m16,reloadm16,crowbar,gruntmove,gruntidle,map_matrix,slavecorpsacorps,zombieattack,zombiemove,slavedeath):
         # initialisation de la librairie GLFW
         glfw.init()
         # paramétrage du context OpenGL
@@ -54,9 +54,7 @@ class ViewerGL:
         self.gruntmove = gruntmove
         self.gruntidle = gruntidle
         self.slavecorpsacorps = slavecorpsacorps
-        self.slaveball = slaveball
         self.creationbullet = False
-        self.ballobject = ballobject
         self.crowbar = crowbar
         self.crowbar_indice = 0
         self.reloadglock = reloadglock
@@ -97,9 +95,18 @@ class ViewerGL:
         self.sound_channel = None
         self.angle = 0
         self.inventory = ["crowbar"]
-
-
-
+        self.zombieattack = zombieattack
+        self.zombiemove = zombiemove
+        self.creationbullet = False
+        self.bullet_textures = ["sprites/slave/slave_bullet/X025A0.png","sprites/slave/slave_bullet/X025B0.png","sprites/slave/slave_bullet/X025C0.png","sprites/slave/slave_bullet/X025D0.png","sprites/slave/slave_bullet/X025E0.png","sprites/slave/slave_bullet/X025F0.png","sprites/slave/slave_bullet/X025G0.png","sprites/slave/slave_bullet/X025H0.png","sprites/slave/slave_bullet/X025I0.png","sprites/slave/slave_bullet/X025J0.png"]
+        self.translation_speed = 0.4
+        self.enemyhit = False
+        self.enemylife = 10
+        self.enemienvie = True
+        self.frame_index = 0
+        self.mortfinie = False
+        self.slavedeath = slavedeath
+        """
         program3d_id = glutils.create_program_from_file('shader.vert', 'shader.frag')
         m = Mesh.load_obj('cube.obj')
         m.normalize()
@@ -110,7 +117,7 @@ class ViewerGL:
         tr.rotation_center.z = 0.2
         texture = glutils.load_texture('doom_voxel_marines.png')
         self.ballobject = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
-
+        """
 
 
     def run(self):
@@ -133,10 +140,12 @@ class ViewerGL:
             self.update_gui()
             self.fire()
             self.check_enemy_distance()
-            self.createenemybullet()
             self.bulletmovement()
             self.tirtouche()
             self.tournerleserviettes()
+            self.sound_distance()
+            self.change_vorti_hit()
+            self.enemi_death_anim()
             self.check_position(self.cam.transformation.translation, self.map_matrix)
             if self.ensaut:
                     self.cam.transformation.translation.y = alpha*(glfw.get_time()-self.tinit-0.5)**2 + beta +2
@@ -168,7 +177,7 @@ class ViewerGL:
             glfw.swap_buffers(self.window)
             # gestion des évènements
             glfw.poll_events()
-
+    
         
     def check_position(self, viewer_position, map_matrix):
         cube = Mesh.load_obj('cube.obj')
@@ -188,11 +197,10 @@ class ViewerGL:
 
         if row >= 0 and row < len(map_matrix) and col >= 0 and col < len(map_matrix[row]):
             if map_matrix[row][col] == 2:
-                print("I am on a 2")
+                #print("I am on a 2")
                 return False
 
         return True
-
 
 
 
@@ -264,8 +272,9 @@ class ViewerGL:
                 self.sound_channel.play(pygame.mixer.Sound(step_sound))
 
             if key == glfw.KEY_I:
-                self.creationbullet = True
+                self.creationbullet= True
                 self.createenemybullet()
+                print("creation bullet")
                 #self.cam.transformation.rotation_euler[0] -= rotation_speed  # Negate rotation
             elif key == glfw.KEY_K:
                 self.cam.transformation.rotation_euler[0] += rotation_speed  # Negate rotation
@@ -279,13 +288,13 @@ class ViewerGL:
                     self.weapon = "glock"
                     self.current_texture_list = self.gun
                     texture = glutils.load_texture("sprites/Pistol/HW2Fa0.png")
-                    self.update_object_texture(294, texture)
+                    self.update_object_texture(-6, texture)
                     self.choixammo()
             elif key == glfw.KEY_3:
                 self.weapon = "crowbar"
                 self.current_texture_list = self.crowbar[self.crowbar_indice]
                 texture = glutils.load_texture("sprites/Crowbar/crowbar1.png")
-                self.update_object_texture(294, texture)
+                self.update_object_texture(-6, texture)
                 self.choixammo()
             
             elif key == glfw.KEY_1:
@@ -294,7 +303,7 @@ class ViewerGL:
                     self.choixammo()
                     self.current_texture_list = self.crowbar[self.crowbar_indice]
                     texture = glutils.load_texture("sprites/M16/HW3Fa0.png")
-                    self.update_object_texture(294, texture)
+                    self.update_object_texture(-6, texture)
 
 
         # Get the forward direction by transforming the default forward vector with the rotation matrix
@@ -433,10 +442,15 @@ class ViewerGL:
                             self.crowbar_indice +=1
                             if self.crowbar_indice >2:
                                 self.crowbar_indice = 0
-
-                        self.change_gun_texture(self.current_texture_list)
+                        if self.tirtouche():
+                            #print("TU AS TIRE SUR L'ENNEMI")
+                            self.enemyhit = True
+                            self.last_hit_time = time.time()
+                            self.change_vorti_hit()
+                        self.change_gun_texture(self.current_texture_list)   
                         self.last_texture_change_time = glfw.get_time()
                         self.is_texture_loop_active = True
+                        
             if self.usedammo == 0:
                 if self.weapon == "glock":
                     self.listeammo[1] = self.ammo
@@ -447,6 +461,44 @@ class ViewerGL:
                     self.usedammo = self.listeammo[2]
                     self.reload()
 
+    def enemi_death_anim(self):
+        if not self.enemienvie:
+            if not self.mortfinie:
+
+                print("ennemi est mort")
+                self.frame_index  +=1
+                texture_path = self.slavedeath[self.frame_index]
+                texture = glutils.load_texture(texture_path)
+                self.update_object_texture(-11,texture)
+                if self.frame_index == len(self.slavedeath)-1:
+                    positionportail = self.objs[-11].transformation.translation
+                    self.objs.pop(-11)
+                    self.mortfinie = True
+                    self.objs[-7].transformation.translation= positionportail
+
+        
+
+
+
+    def change_vorti_hit(self):
+        if self.enemienvie:
+            if self.enemyhit:
+                
+                print(self.enemylife)
+                if self.enemylife <= 0:
+
+                    self.enemienvie = False
+                    self.enemi_death_anim()
+                self.update_object_texture(-11, glutils.load_texture("sprites/slave/HLFPa1.png"))
+                if self.enemyhit:
+                    self.update_object_texture(-11, glutils.load_texture("sprites/slave/HLFPa1.png"))
+                    current_time = time.time()
+                    elapsed_time = current_time - self.last_hit_time
+                    #print("lepased time: ", elapsed_time)
+
+                    if elapsed_time >= 0.5:
+                        self.enemyhit = False
+                        self.last_hit_time = current_time
 
     def reload(self):
         
@@ -484,7 +536,7 @@ class ViewerGL:
         if self.gun_index < len(texture_list):
             texture_path = texture_list[self.gun_index]
             texture = glutils.load_texture(texture_path)
-            self.update_object_texture(294, texture)  # Assuming the gun object is at index 3
+            self.update_object_texture(-6, texture)  # Assuming the gun object is at index 3
             ##print("changement de texture")
             self.gun_index += 1
 
@@ -514,180 +566,150 @@ class ViewerGL:
           #  for i in range (0,3):
            #     self.ennemiposition[0][i]=np.dot(self.ennemiposition[0][i],rotation)
 
-###
+    ###
     def ennemis(self):
-        # Get the enemy's position
-        enemy_position = self.objs[291].transformation.translation  # Assuming the enemy object is at index 0 in the objs list
+        if self.enemienvie:
+            # Get the enemy's position
+            enemy_position = self.objs[-11].transformation.translation  # Assuming the enemy object is at index 0 in the objs list
 
-        # Get the camera's position
-        camera_position = self.cam.transformation.translation
-
-        # Calculate the angle between the enemy and the camera
-        angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
-
-        # Update the enemy object's rotation around the y-axis
-        self.objs[291].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
-
-        # Define the speed at which the enemy moves towards the camera
-        speed = 0.1
-
-        # Calculate the direction from the enemy to the camera
-        direction = camera_position - enemy_position
-
-        # Normalize the direction vector
-        direction = direction / np.linalg.norm(direction)
-
-        # Calculate the enemy's new position by moving towards the camera
-        new_position = enemy_position + direction * speed
-
-        # Adjust the new position to stay grounded on the y-axis (assuming ground level is at y=0)
-        new_position[1] = 0
-
-        # Update the enemy's translation with the new position
-        self.objs[291].transformation.translation = new_position
-
-    def enemy_animation(self):
-        current_time = glfw.get_time()
-        distance_traveled = self.objs[291].transformation.translation.length
-
-        frame_index = 0  # Initialize frame_index with a default value
-
-        if not self.enemyattack:
-            frame_index = int(distance_traveled / self.enemy_texture_delay) % len(self.gruntmove)
-            texture_path = self.gruntmove[frame_index]
-        else:
-            frame_index_idle = int(current_time / self.enemy_texture_delay) % len(self.slavecorpsacorps)
-            texture_path = self.slavecorpsacorps[frame_index_idle]
-
-        if frame_index != self.last_frame_index or self.enemyattack:
-            texture = glutils.load_texture(texture_path)
-            self.update_object_texture(291, texture)  # Assuming the enemy object is at index 0
-            self.last_frame_index = frame_index
-
-        self.last_enemy_texture_change_time = current_time
-
-
-
-
-
-    def createenemybullet(self):
-        if self.creationbullet:
-            
-            self.nbbullet +=1
-            self.objs.append(self.ballobject)
-
-            GL.glUseProgram(self.objs[-1].program)
-            self.objs[-1].draw()
-            texture = glutils.load_texture("grass.jpg")
-            self.update_object_texture(-1, texture)
-            self.creationbullet = False
-        else:
-            self.bulletmovement()
-        
-    def bulletmovement(self):
-        # Update the enemy's translation with the new position
-        if self.nbbullet > 0:
-            bullet_position = self.objs[-1].transformation.translation
+            # Get the camera's position
             camera_position = self.cam.transformation.translation
-            speed = 0.1
-            angle = np.arctan2(camera_position[0] - bullet_position[0], camera_position[2] - bullet_position[2])
-            new_position = bullet_position + angle * speed
 
+            # Calculate the angle between the enemy and the camera
+            angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
+
+            # Update the enemy object's rotation around the y-axis
+            self.objs[-11].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+
+            # Define the speed at which the enemy moves towards the camera
+            speed = 0.1
+
+            # Calculate the direction from the enemy to the camera
+            direction = camera_position - enemy_position
+
+            # Normalize the direction vector
+            direction = direction / np.linalg.norm(direction)
+
+            # Calculate the enemy's new position by moving towards the camera
+            new_position = enemy_position + direction * speed
+            if new_position.x > 70 or new_position.x < 61 or new_position.z> 40 or new_position.z <20:
+                #print("l'ennemi a atteint ses limites")
+                new_position = self.objs[-11].transformation.translation
             # Adjust the new position to stay grounded on the y-axis (assuming ground level is at y=0)
             new_position[1] = 0
-            #for i in range(290, 290):
-            print("la l'objet devrait bouger")
-            self.objs[-1].transformation.translation = new_position
-            print(new_position)
-            print(self.cam.transformation.translation)
-            #self.checkbullettime()
 
-    #def checkbullettime(self):
+            # Check if the new position is valid (not on a "2" in the map matrix)
+            if self.check_position(new_position, self.map_matrix):
+                # Update the enemy's translation with the new position
+                self.objs[-11].transformation.translation = new_position
+            else:
+                # Handle the case where the new position is invalid (on a "2" in the map matrix)
+                # For example, you could stop the enemy or make it choose a different direction.
+                # You can add your custom logic here.
+                pass
 
 
+    def enemy_animation(self):
+        if self.enemienvie:
 
+            if not self.enemyhit:
+                current_time = glfw.get_time()
+                distance_traveled = self.objs[-11].transformation.translation.length
+
+                frame_index = 0  # Initialize frame_index with a default value
+
+                if not self.enemyattack:
+                    print("not enemyattack")
+                    frame_index = int(distance_traveled / self.enemy_texture_delay) % len(self.gruntmove)
+                    texture_path = self.gruntmove[frame_index]
+                else:
+                    print("enemyattack")
+                    frame_index_idle = int(current_time / self.enemy_texture_delay) % len(self.slavecorpsacorps)
+                    texture_path = self.slavecorpsacorps[frame_index_idle]
+
+                if frame_index != self.last_frame_index or self.enemyattack:
+                    texture = glutils.load_texture(texture_path)
+                    self.update_object_texture(-11, texture)  # Assuming the enemy object is at index 0
+                    self.last_frame_index = frame_index
+
+                self.last_enemy_texture_change_time = current_time
+
+    
 
     def change_enemy_texture(self, texture_list=None):
-        if texture_list is None:
-            texture_list = self.gruntidle
+        if self.enemienvie:
+            if not self.enemyhit:
+                if texture_list is None:
+                    texture_list = self.gruntidle
 
-        frame_index = self.enemy_index // len(texture_list)  # Calculate the current frame index
+                frame_index = self.enemy_index // len(texture_list)  # Calculate the current frame index
 
-        if frame_index < len(texture_list):
-            texture_path = texture_list[frame_index]
-            texture = glutils.load_texture(texture_path)
-            self.update_object_texture(291, texture)  # Assuming the enemy object is at index 290
+                if frame_index < len(texture_list):
+                    texture_path = texture_list[frame_index]
+                    texture = glutils.load_texture(texture_path)
+                    self.update_object_texture(-11, texture)  # Assuming the enemy object is at index -12
 
-        self.enemy_index += 1
+                self.enemy_index += 1
 
-        if frame_index == len(texture_list) - 1:
-            self.createenemybullet()
-            self.enemy_index = 0  # Reset the index to loop back to the beginning
-            self.attaquedistance = False  # Stop further animation when the last frame is reached
+                if frame_index == len(texture_list) - 1:
+                    self.enemy_index = 0  # Reset the index to loop back to the beginning
+                    self.creationbullet = True
+                    self.createenemybullet()
+                    self.sound_channel.play(pygame.mixer.Sound("sounds/zap1.wav"))
+                    self.attaquedistance = False  # Stop further animation when the last frame is reached
+
 
     def check_enemy_distance(self):
-        enemy_position = self.objs[291].transformation.translation
-        camera_position = self.cam.transformation.translation
-        distance = np.linalg.norm(enemy_position - camera_position)
-
-        if distance > 40:
-            self.enemy_animation()
-            self.ennemis()
-            self.enemyattack = False
-        elif 5 <= distance <= 40:
-            # Get the enemy's position
-            enemy_position = self.objs[291].transformation.translation  # Assuming the enemy object is at index 0 in the objs list
-
-            # Get the camera's position
+        if self.enemienvie:
+            enemy_position = self.objs[-11].transformation.translation
             camera_position = self.cam.transformation.translation
+            distance = np.linalg.norm(enemy_position - camera_position)
+            #print(self.attaquedistance)
+            if  distance > 15:
+                self.enemy_animation()
+                self.ennemis()
+                #print("TROP LOIN")
+                self.enemyattack = False
+            elif 5 <= distance <= 15:
+                enemy_position = self.objs[-11].transformation.translation
+                camera_position = self.cam.transformation.translation
+                angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
+                self.objs[-11].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
 
-            # Calculate the angle between the enemy and the camera
-            angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
+                if not self.attaquedistance:
+                    self.attaquedistance = True
+                    self.start_time = glfw.get_time()  # Update the start_time here
+                    self.enemy_index = 0  # Reset the enemy_index when attack distance begins
 
-            # Update the enemy object's rotation around the y-axis
-            self.objs[291].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
-            if not self.attaquedistance:
-                self.attaquedistance = True
-                self.start_time = glfw.get_time()  # Update the start_time here
-                self.enemy_index = 0  # Reset the enemy_index when attack distance begins
-
-            if self.attaquedistance:
-                current_time = glfw.get_time()
-                elapsed_time = current_time - self.start_time
-
-                if elapsed_time >= 3.0:
-                    print("TROIS SECONDES SONT PASSEES")
-
-                    # Reset the attack flag and update the texture
-                    self.attaquedistance = False
-                else:
-                    # Display the current attack texture
+                if self.attaquedistance:
+                    current_time = glfw.get_time()
+                    elapsed_time = current_time - self.start_time
                     self.change_enemy_texture()
-
-
-            
-        else:
-            if not self.attaqueencours:
+                    
+            else:
+                
                 self.enemyattack = True
-                self.attaqueencours = True
+                print("je set l'attauqe sur true")
 
-            self.enemy_animation()
 
-            enemy_position = self.objs[291].transformation.translation
+                self.enemy_animation()
+                
+                enemy_position = self.objs[-11].transformation.translation
 
-            # Get the camera's position
-            camera_position = self.cam.transformation.translation
+                # Get the camera's position
+                camera_position = self.cam.transformation.translation
 
-            # Calculate the angle between the enemy and the camera
-            angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
+                # Calculate the angle between the enemy and the camera
+                angle = np.arctan2(camera_position[0] - enemy_position[0], camera_position[2] - enemy_position[2])
 
-            # Update the enemy object's rotation around the y-axis
-            self.objs[290].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+                # Update the enemy object's rotation around the y-axis
+                self.objs[-11].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+                #print("je fais tourner lenemi")
+                frame_index_idle = int(glfw.get_time() / self.enemy_texture_delay) % len(self.slavecorpsacorps)
+                #texture_path = self.slavecorpsacorps[frame_index_idle]
+                #texture = glutils.load_texture(texture_path)
+                #self.update_object_texture(-11, texture)
 
-            frame_index_idle = int(glfw.get_time() / self.enemy_texture_delay) % len(self.slavecorpsacorps)
-            texture_path = self.slavecorpsacorps[frame_index_idle]
-            texture = glutils.load_texture(texture_path)
-            self.update_object_texture(291, texture)
 
             
 
@@ -696,72 +718,179 @@ class ViewerGL:
 
 
     def tirtouche(self):
-        # Assuming you have a camera object with a transformation matrix
-        rotation = pyrr.matrix33.create_from_eulers(-self.cam.transformation.rotation_euler)  # Negate rotation
+        if self.enemienvie:
 
-        # Get the forward direction vector in the world space
-        forward_direction = rotation @ pyrr.Vector3([0, 0, -1])
+            # Assuming you have a camera object with a transformation matrix
+            rotation = pyrr.matrix33.create_from_eulers(-self.cam.transformation.rotation_euler)  # Negate rotation
 
-        # Normalize the forward direction vector
-        forward_direction = forward_direction / np.linalg.norm(forward_direction)
+            # Get the forward direction vector in the world space
+            forward_direction = rotation @ pyrr.Vector3([0, 0, -1])
 
-        enemy_position = self.objs[291].transformation.translation
-        camera_position = self.cam.transformation.translation
-        distance = np.linalg.norm(enemy_position - camera_position)
+            # Normalize the forward direction vector
+            forward_direction = forward_direction / np.linalg.norm(forward_direction)
 
-        # Calculate the vector from the camera to the enemy
-        enemy_direction = enemy_position - camera_position
+            enemy_position = self.objs[-11].transformation.translation
+            camera_position = self.cam.transformation.translation
+            distance = np.linalg.norm(enemy_position - camera_position)
 
-        # Normalize the enemy direction vector
-        enemy_direction = enemy_direction / np.linalg.norm(enemy_direction)
+            # Calculate the vector from the camera to the enemy, ignoring the Y component
+            enemy_direction = enemy_position - camera_position
+            enemy_direction[1] = 0  # Set Y component to zero
 
-        # Calculate the angle between the enemy direction and the forward direction
-        angle = np.arccos(np.dot(enemy_direction, forward_direction))
+            # Normalize the enemy direction vector
+            enemy_direction = enemy_direction / np.linalg.norm(enemy_direction)
 
-        # Convert the angle from radians to degrees
-        angle_degrees = np.degrees(angle)
+            # Calculate the angle between the enemy direction and the forward direction
+            angle = np.arccos(np.dot(enemy_direction, forward_direction))
 
-        # Define a threshold based on the distance between the camera and the enemy
-        threshold = 30 - (distance * 2)  # Adjust the factor (2) as needed
-        #print(threshold)
-        if angle_degrees <= threshold:
-            #print("I'M ON THE TARGET")
-            pass
-        else:
-            #print("I'm not")
-            pass
+            # Convert the angle from radians to degrees
+            angle_degrees = np.degrees(angle)
+
+
+            threshold = 60 / distance # Adjust the factors as needed
+
+            if angle_degrees <= threshold:
+                #print("I'M ON THE TARGET")
+                if self.weapon != "crowbar":
+                    self.enemylife -= 10
+                    return True
+                else:
+                    if distance <= 3:
+                        self.enemylife -= 1
+                        return True
+                    else:
+                        return False
+
+
+            else:
+                #print("I'm not")
+                return False
+
 
 
 
     def tournerleserviettes(self):
+
+
         if self.angle  >= 360:
             self.angle = 0
         self.angle +=0.5
-        self.objs[292].transformation.rotation_euler[pyrr.euler.index().yaw] = self.angle
-        self.objs[293].transformation.rotation_euler[pyrr.euler.index().yaw] = self.angle
+        self.objs[-10].transformation.rotation_euler[pyrr.euler.index().yaw] = self.angle
+        self.objs[-9].transformation.rotation_euler[pyrr.euler.index().yaw] = self.angle
 
 
-        glock_position = self.objs[292].transformation.translation
-        m16_position = self.objs[293].transformation.translation
+        glock_position = self.objs[-10].transformation.translation
+        m16_position = self.objs[-9].transformation.translation
         camera_position = self.cam.transformation.translation
         if not "m16" in self.inventory:
             distance_m16 = np.linalg.norm(m16_position - camera_position)
             if distance_m16 <= 2.5:
+                sound = pygame.mixer.Sound("sounds/DSITEMUP.wav")
+                sound.play()
                 print("i pick up the gun")
             
-                self.objs[293].transformation.translation.x = 100
+                self.objs[-9].transformation.translation.x = 100
                 self.inventory.append("m16")
+                self.weapon = "m16"
+                texture = glutils.load_texture(self.m16[0])
+                self.update_object_texture(-6, texture)
+                self.choixammo()
+                self.choixammo()
 
         if not "glock" in self.inventory:
             distance_glock = np.linalg.norm(glock_position - camera_position)
             if distance_glock <= 2.5:
+                sound = pygame.mixer.Sound("sounds/DSITEMUP.wav")
+                sound.play()
                 print("i pick up the gun")
-            
-                self.objs[292].transformation.translation.x = 100
+                sound = pygame.mixer.Sound("sounds/DSITEMUP.wav")
+                sound.play()
+                self.objs[-10].transformation.translation.x = 100
                 self.inventory.append("glock")
+                self.weapon = "glock"
+                texture = glutils.load_texture(self.gun[0])
+                self.update_object_texture(-6, texture)
+                self.choixammo()
 
+
+
+    def sound_distance(self):
+
+        m16_position = self.objs[-7].transformation.translation
+        camera_position = self.cam.transformation.translation
+        distance = np.linalg.norm(m16_position - camera_position)
+        if distance <2.1:
+            exit()
+            
+
+        sons = ["sounds/spark1.wav","sounds/spark2.wav","sounds/spark3.wav","sounds/spark4.wav","sounds/spark5.wav","sounds/spark6.wav"]
+        index = random.randint(0,5)
+        portal_sound = sons[index]
+
+
+        soundportal = pygame.mixer.Sound(portal_sound)
+        max_volume = 1.0
+        min_distance = 1.0  # Distance at which the volume is maximum
+        max_distance = 30.0  # Distance at which the volume is minimum
+        # Calculate the volume based on distance
+        volume = max_volume - (distance - min_distance) / (max_distance - min_distance)
+        volume = max(0, min(volume, 1))  # Ensure the volume is between 0 and 1
+        soundportal.set_volume(volume)
+        
+        if self.sound_channel is None or not self.sound_channel.get_busy() and not self.ensaut:
+            self.sound_channel = pygame.mixer.find_channel()
+            self.sound_channel.fadeout(1000) 
+            soundportal.play()
+        # Set the volume for the sound
+
+    def createenemybullet(self):
+        if self.enemienvie:
+            if self.creationbullet:
+                self.nbbullet += 1
+                bullet_position = self.objs[-11].transformation.translation
+                self.objs[-8].transformation.translation = bullet_position
+                texture = glutils.load_texture("grass.jpg")
+                self.update_object_texture(-8, texture)
+                self.creationbullet = False
+                self.initial_direction = self.cam.transformation.translation - bullet_position  # Store the initial direction
+                self.initial_direction = self.initial_direction / np.linalg.norm(self.initial_direction)  # Normalize the initial direction
+            else:
+                self.bulletmovement()
+
+    def bulletmovement(self):
+        if self.nbbullet > 0:
+            bullet_position = self.objs[-8].transformation.translation
+            speed = 0.5
+            new_position = bullet_position + self.initial_direction * speed  # Use the initial direction for bullet movement
+
+            # Adjust the new position to stay grounded on the y-axis (assuming ground level is at y=0)
+            new_position[1] = 0
+
+            # Calculate the texture index based on the bullet's movement
+            texture_index = int(new_position[0] / 0.1) % len(self.bullet_textures)
+            texture = glutils.load_texture(self.bullet_textures[texture_index])
+            self.update_object_texture(-8, texture)
+
+            self.objs[-8].transformation.translation = new_position
+
+            # Get the camera's position
+            camera_position = self.cam.transformation.translation
+            distance = np.linalg.norm(bullet_position - camera_position)
+
+            # Calculate the angle between the enemy and the camera
+            angle = np.arctan2(camera_position[0] - new_position[0], camera_position[2] - new_position[2])
+
+            # Update the enemy object's rotation around the y-axis
+            self.objs[-8].transformation.rotation_euler[pyrr.euler.index().yaw] = -angle
+
+            if distance <2.2:
+                self.life -= 10
+            #print(self.cam.transformation.translation)
+            #self.checkbullettime()
+
+    #def checkbullettime(self):
     def update_gui(self):
         #print(self.usedammo)
-        self.objs[298].value = str(self.life)
+        self.objs[-2].value = str(self.life)
         self.objs[-1].value = str(self.usedammo)
         pass
