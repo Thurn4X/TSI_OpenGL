@@ -147,10 +147,9 @@ def main():
 
     # Ajout texture
     texturevorti = glutils.load_texture("sprites/Grunt1/HK1Ba0.png")
-    texturezombie = glutils.load_texture("sprites/zombie/HLEAa1.png")
+
     vorti = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturevorti, Transformation3D())
-    zombard1 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturezombie, Transformation3D())
-    zombard2 = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturezombie, Transformation3D())
+
 
     vorti.transformation.translation.x = 62
     vorti.transformation.translation.z = 30
